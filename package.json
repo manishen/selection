@@ -1,0 +1,38 @@
+{
+  "name": "selectionjs",
+  "version": "1.0.0",
+  "description": "SelectionJs is the jquery plugin that provides select and range components.",
+  "main": "selection.js",
+  "directories": {
+    "example": "example",
+    "dist": "dist",
+    "docs": "docs",
+    "src": "src"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ataiemajid_63/selectionjs.git"
+  },
+  "keywords": [
+    "select",
+    "selection",
+    "range select",
+    "single select",
+    "multi select"
+  ],
+  "author": "Majid Ataee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ataiemajid_63/griew/issues"
+  },
+  "homepage": "",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "2.4.1",
+    "gulp-uglify": "^2.1.2"
+  }
+}
