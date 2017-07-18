@@ -4,15 +4,16 @@ var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
 
 gulp.task('sass', function () {
-    gulp.src('griew.scss')
+    gulp.src('src/selection.scss')
     // .pipe(sourcemaps.init())
         .pipe(sass({outputStyle: 'compressed'}))
         // .pipe(sourcemaps.write())
-        .pipe(gulp.dest('dist'));
+        .pipe(gulp.dest('dist'))
+        .pipe(gulp.dest('example/css'));
 });
 
 gulp.task('minify', function () {
-    gulp.src('griew.js')
+    gulp.src('src/selection.js')
         .pipe(uglify())
         .pipe(gulp.dest('dist'));
 });
