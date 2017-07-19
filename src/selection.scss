@@ -1,61 +1,91 @@
 .selection {
-  display: inline-flex;
-  border: 1px solid #cccccc;
-  box-sizing: border-box;
-  padding: 4px 2px;
-  min-height: 25px;
   position: relative;
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  .selection-toggle {
+    padding-left: 0.3em;
+    border: 1px solid #cccccc;
 
-  .selection-caption {
-    display: flex;
-    min-width: 50px;
-  }
+    .selection-btn {
+      border: 0;
+      outline: 0;
+      background-color: transparent;
 
-  .selection-btn {
-    display: flex;
-    border: none;
-    background: none;
-    outline: none;
-    padding: 4px;
-    margin: 0 2px;
-    line-height: 0;
+      &::after {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-right: 0.255em;
+        vertical-align: 0.255em;
+        content: "";
+        border-top: 0.3em solid;
+        border-right: 0.3em solid transparent;
+        border-left: 0.3em solid transparent;
+      }
 
-    &:hover {
-      background-color: #ffc00c;
-    }
+      &:empty::after {
+        margin-left: 0;
+      }
 
-    &:before {
-      content: '+';
+      &.clear::after {
+        content: "×";
+        vertical-align: top;
+        color: #f00;
+        border: 0;
+      }
     }
   }
 }
 
-.selection-dropdown {
+.selection-list {
   position: absolute;
-  top: 30px;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  //float: left;
+  min-width: 10rem;
+  padding: 0.5rem 0;
+  margin: 0.125rem 0 0;
+  font-size: 1.3rem;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
 
-  .selection-input-group {
+  &.show {
     display: block;
-    width: 100%;
-
-    .selection-input {
-      display: block;
-      width: 100%;
-
-    }
-
-    .selection-input-min,
-    .selection-input-max {
-      display: inline-block;
-      width: 50%;
-
-    }
   }
 
+  .selection-item {
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1.5rem;
+    clear: both;
+    font-weight: normal;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background: none;
+    border: 0;
+
+    &:focus, &:hover {
+      color: #16181b;
+      text-decoration: none;
+      background-color: #f8f9fa;
+    }
+
+    &.active, &:active {
+      color: #fff;
+      text-decoration: none;
+      background-color: #007bff;
+    }
+
+    &.disabled, &:disabled {
+      color: #868e96;
+      background-color: transparent;
+    }
+  }
 }

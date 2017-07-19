@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <title>Selection Js Jquery Component</title>
 
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/selection.css">
-    <script src="js/jquery.min.js"></script>
-    <script src="../src/selection.js"></script>
 </head>
 <body>
-<select name="country">
-    <option>Iran</option>
-    <option>Iraq</option>
-    <option>USA</option>
-</select>
-<select name="city">
-    <option>Mashhad</option>
-    <option>Tehran</option>
-    <option>Isfehan</option>
-    <option>Tabriz</option>
-    <option>Kashan</option>
-</select>
-<script>
-    var selection = $('select').selection();
-</script>
+<div class="container" style="padding-top: 15px">
+    <form class="form-inline">
+        <div class="form-group">
+            <div class="selection">
+                <div class="selection-toggle">
+                    Country
+                    <button type="button" class="selection-btn clear"></button>
+                </div>
+                <ul class="selection-list show">
+                    <li class="selection-item">Mashhad</li>
+                    <li class="selection-item">Tehran</li>
+                    <li class="selection-item">Isfehan</li>
+                    <li class="selection-item">Yazd</li>
+                </ul>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="../src/selection.js"></script>
 </body>
 </html>

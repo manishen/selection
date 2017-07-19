@@ -1,134 +1,403 @@
-(function ($) {
+/**
+ * --------------------------------------------------------------------------
+ * Manishen (v1.0.0): selection.js
+ * Licensed under MIT
+ * --------------------------------------------------------------------------
+ */
+
+var Selection = function ($) {
+
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
 
     var NAME = 'selection';
-    var DATA_KEY = 'ma.selection';
+    var VERSION = '4.0.0-alpha.6';
+    var DATA_KEY = 'bs.selection';
     var EVENT_KEY = '.' + DATA_KEY;
     var DATA_API_KEY = '.data-api';
     var JQUERY_NO_CONFLICT = $.fn[NAME];
+    var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
+    var SPACE_KEYCODE = 32; // KeyboardEvent.which value for space key
+    var TAB_KEYCODE = 9; // KeyboardEvent.which value for tab key
+    var ARROW_UP_KEYCODE = 38; // KeyboardEvent.which value for up arrow key
+    var ARROW_DOWN_KEYCODE = 40; // KeyboardEvent.which value for down arrow key
+    var RIGHT_MOUSE_BUTTON_WHICH = 3; // MouseEvent.which value for the right button (assuming a right-handed mouse)
+    var REGEXP_KEYDOWN = new RegExp(ARROW_UP_KEYCODE + '|' + ARROW_DOWN_KEYCODE + '|' + ESCAPE_KEYCODE);
 
-    var Tag = {
-        MAIN: '<div class="selection">',
-        BUTTON: '<button class="selection-btn">',
-        CAPTION: '<span class="selection-caption">',
-        DROPDOWN: '<div class="selection-dropdown">',
-        INPUT_GROUP: '<div class="selection-input-group">',
-        INPUT: '<input class="selection-input">',
-        INPUT_MIN: '<input class="selection-input-min">',
-        INPUT_MAX: '<input class="selection-input-max">',
-        INPUT_SEPARATE: '<span class="selection-input-separate">',
-        LIST: '<div class="selection-list">',
-        ITEM: '<div class="selection-item">',
-        ITEM_CHECK: '<span class="selection-item-check">',
-        ITEM_TEXT: '<span class="selection-item-text">',
-        ITEM_ICON: '<span class="selection-item-icon">',
-        ACTION_GROUP: '<div class="selection-action-group">',
-        ACTION_ACCEPT: '<button class="selection-action-accept">',
-        ACTION_RESET: '<button class="selection-action-reset">',
-        ACTION_NEW: '<button class="selection-action-new">'
+    var Event = {
+        HIDE: 'hide' + EVENT_KEY,
+        HIDDEN: 'hidden' + EVENT_KEY,
+        SHOW: 'show' + EVENT_KEY,
+        SHOWN: 'shown' + EVENT_KEY,
+        CLICK: 'click' + EVENT_KEY,
+        CLICK_DATA_API: 'click' + EVENT_KEY + DATA_API_KEY,
+        KEYDOWN_DATA_API: 'keydown' + EVENT_KEY + DATA_API_KEY,
+        KEYUP_DATA_API: 'keyup' + EVENT_KEY + DATA_API_KEY
     };
 
+    var ClassName = {
+        DISABLED: 'disabled',
+        SHOW: 'show',
+        DROPUP: 'dropup',
+        MENURIGHT: 'selection-menu-right',
+        MENULEFT: 'selection-menu-left'
+    };
 
+    var Selector = {
+        DATA_TOGGLE: '[data-toggle="selection"]',
+        FORM_CHILD: '.selection form',
+        MENU: '.selection-menu',
+        NAVBAR_NAV: '.navbar-nav',
+        VISIBLE_ITEMS: '.selection-menu .selection-item:not(.disabled)'
+    };
+
+    var AttachmentMap = {
+        TOP: 'top-start',
+        TOPEND: 'top-end',
+        BOTTOM: 'bottom-start',
+        BOTTOMEND: 'bottom-end'
+    };
+
+    var Default = {
+        placement: AttachmentMap.BOTTOM,
+        offset: 0,
+        flip: true
+    };
+
+    var DefaultType = {
+        placement: 'string',
+        offset: '(number|string)',
+        flip: 'boolean'
+
+        /**
+         * ------------------------------------------------------------------------
+         * Class Definition
+         * ------------------------------------------------------------------------
+         */
+
+    };
     var Selection = function () {
-        function Selection(element, options) {
-            this._element = element;
-            this._options = options;
-            this._tag = {};
+        function Selection(element, config) {
+            _classCallCheck(this, Selection);
 
-            this._make();
+            this._element = element;
+            this._popper = null;
+            this._config = this._getConfig(config);
+            this._menu = this._getMenuElement();
+            this._inNavbar = this._detectNavbar();
+
+            this._addEventListeners();
         }
 
-        // Private Methods
+        // getters
 
-        Selection.prototype._make = function _make() {
+        // public
 
-            this._tag.main = $(Tag.MAIN);
-            this._tag.button = $(Tag.BUTTON);
-            this._tag.caption = $(Tag.CAPTION);
-            this._tag.dropDown = $(Tag.DROPDOWN);
-            this._tag.inputGroup = $(Tag.INPUT_GROUP);
-            this._tag.input = $(Tag.INPUT);
-            this._tag.inputMin = $(Tag.INPUT_MIN);
-            this._tag.inputMax = $(Tag.INPUT_MAX);
-            this._tag.inputSeparate = $(Tag.INPUT_SEPARATE);
-            this._tag.list = $(Tag.LIST);
-            this._tag.actionGroup = $(Tag.ACTION_GROUP);
-            this._tag.actionAccept = $(Tag.ACTION_ACCEPT);
-            this._tag.actionReset = $(Tag.ACTION_RESET);
-            this._tag.actionNew = $(Tag.ACTION_NEW);
-            // this._tag.item = $(Tag.ITEM);
-            // this._tag.itemCheck = $(Tag.ITEM_CHECK);
-            // this._tag.itemText = $(Tag.ITEM_TEXT);
-            // this._tag.itemIcon = $(Tag.ITEM_ICON);
-
-            this._tag.main
-                .append(this._tag.caption)
-                .append(this._tag.button);
-
-            // if enabled searchable and choose type, single select or multi select
-            this._tag.inputGroup.append(this._tag.input);
-
-            // if enabled searchable and choose type, range
-            this._tag.inputGroup
-                .append(this._tag.inputMin)
-                .append(this._tag.inputMax);
-
-            // if enabled searchable
-            this._tag.dropDown.append(this._tag.inputGroup);
-
-            // most move in to another function
-            var items = $(this._element).children('option');
-            for (var i = 0; i < items.length; i++) {
-                this._tag.list.append($(Tag.ITEM).append($(Tag.ITEM_TEXT).html($(items[i]).html())));
+        Selection.prototype.toggle = function toggle() {
+            if (this._element.disabled || $(this._element).hasClass(ClassName.DISABLED)) {
+                return;
             }
-            //---------------------------------
 
-            this._tag.dropDown.append(this._tag.list);
+            var parent = Selection._getParentFromElement(this._element);
+            var isActive = $(this._menu).hasClass(ClassName.SHOW);
 
-            // if enabled new action
-            this._tag.actionGroup.append(this._tag.actionNew);
+            Selection._clearMenus();
 
-            // if enabled accept action
-            this._tag.actionGroup.append(this._tag.actionAccept);
+            if (isActive) {
+                return;
+            }
 
-            // if enabled reset action
-            this._tag.actionGroup.append(this._tag.actionReset);
+            var relatedTarget = {
+                relatedTarget: this._element
+            };
+            var showEvent = $.Event(Event.SHOW, relatedTarget);
 
-            // if enabled actions
-            this._tag.dropDown.append(this._tag.actionGroup);
+            $(parent).trigger(showEvent);
 
-            // if container equals with undefined
-            this._tag.main.append(this._tag.dropDown);
+            if (showEvent.isDefaultPrevented()) {
+                return;
+            }
 
-            $(this._element).after(this._tag.main).css('display', 'none');
+            var element = this._element;
+            // for dropup with alignment we use the parent as popper container
+            if ($(parent).hasClass(ClassName.DROPUP)) {
+                if ($(this._menu).hasClass(ClassName.MENULEFT) || $(this._menu).hasClass(ClassName.MENURIGHT)) {
+                    element = parent;
+                }
+            }
+            this._popper = new Popper(element, this._menu, this._getPopperConfig());
+
+            // if this is a touch-enabled device we add extra
+            // empty mouseover listeners to the body's immediate children;
+            // only needed because of broken event delegation on iOS
+            // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+            if ('ontouchstart' in document.documentElement && !$(parent).closest(Selector.NAVBAR_NAV).length) {
+                $('body').children().on('mouseover', null, $.noop);
+            }
+
+            this._element.focus();
+            this._element.setAttribute('aria-expanded', true);
+
+            $(this._menu).toggleClass(ClassName.SHOW);
+            $(parent).toggleClass(ClassName.SHOW).trigger($.Event(Event.SHOWN, relatedTarget));
         };
 
-        // Public Methods
+        Selection.prototype.dispose = function dispose() {
+            $.removeData(this._element, DATA_KEY);
+            $(this._element).off(EVENT_KEY);
+            this._element = null;
+            this._menu = null;
+            if (this._popper !== null) {
+                this._popper.destroy();
+            }
+            this._popper = null;
+        };
 
+        Selection.prototype.update = function update() {
+            this._inNavbar = this._detectNavbar();
+            if (this._popper !== null) {
+                this._popper.scheduleUpdate();
+            }
+        };
 
-        // Static Methods
+        // private
 
-        Selection._jQueryInterface = function _jQueryInterface(options) {
-            return this.each(function () {
-                var selection = $(this).data(DATA_KEY);
-                var _options = (typeof options === 'undefined' ? 'undefined' : typeof options) === 'object' ? options : null;
+        Selection.prototype._addEventListeners = function _addEventListeners() {
+            var _this9 = this;
 
-                if (!selection) {
-                    selection = new Selection(this, _options);
-                    $(this).data(DATA_KEY, selection);
+            $(this._element).on(Event.CLICK, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                _this9.toggle();
+            });
+        };
+
+        Selection.prototype._getConfig = function _getConfig(config) {
+            var elementData = $(this._element).data();
+            if (elementData.placement !== undefined) {
+                elementData.placement = AttachmentMap[elementData.placement.toUpperCase()];
+            }
+
+            config = $.extend({}, this.constructor.Default, $(this._element).data(), config);
+
+            Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
+
+            return config;
+        };
+
+        Selection.prototype._getMenuElement = function _getMenuElement() {
+            if (!this._menu) {
+                var parent = Selection._getParentFromElement(this._element);
+                this._menu = $(parent).find(Selector.MENU)[0];
+            }
+            return this._menu;
+        };
+
+        Selection.prototype._getPlacement = function _getPlacement() {
+            var $parentSelection = $(this._element).parent();
+            var placement = this._config.placement;
+
+            // Handle dropup
+            if ($parentSelection.hasClass(ClassName.DROPUP) || this._config.placement === AttachmentMap.TOP) {
+                placement = AttachmentMap.TOP;
+                if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
+                    placement = AttachmentMap.TOPEND;
+                }
+            } else if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
+                placement = AttachmentMap.BOTTOMEND;
+            }
+            return placement;
+        };
+
+        Selection.prototype._detectNavbar = function _detectNavbar() {
+            return $(this._element).closest('.navbar').length > 0;
+        };
+
+        Selection.prototype._getPopperConfig = function _getPopperConfig() {
+            var popperConfig = {
+                placement: this._getPlacement(),
+                modifiers: {
+                    offset: {
+                        offset: this._config.offset
+                    },
+                    flip: {
+                        enabled: this._config.flip
+                    }
                 }
 
-                if (typeof options === 'string') {
-                    if (selection[options] === undefined) {
-                        throw new Error('No method named "' + options + '"');
+                // Disable Popper.js for Selection in Navbar
+            };if (this._inNavbar) {
+                popperConfig.modifiers.applyStyle = {
+                    enabled: !this._inNavbar
+                };
+            }
+            return popperConfig;
+        };
+
+        // static
+
+        Selection._jQueryInterface = function _jQueryInterface(config) {
+            return this.each(function () {
+                var data = $(this).data(DATA_KEY);
+                var _config = (typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object' ? config : null;
+
+                if (!data) {
+                    data = new Selection(this, _config);
+                    $(this).data(DATA_KEY, data);
+                }
+
+                if (typeof config === 'string') {
+                    if (data[config] === undefined) {
+                        throw new Error('No method named "' + config + '"');
                     }
-                    selection[options]();
+                    data[config]();
                 }
             });
         };
 
+        Selection._clearMenus = function _clearMenus(event) {
+            if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
+                return;
+            }
+
+            var toggles = $.makeArray($(Selector.DATA_TOGGLE));
+            for (var i = 0; i < toggles.length; i++) {
+                var parent = Selection._getParentFromElement(toggles[i]);
+                var context = $(toggles[i]).data(DATA_KEY);
+                var relatedTarget = {
+                    relatedTarget: toggles[i]
+                };
+
+                if (!context) {
+                    continue;
+                }
+
+                var selectionMenu = context._menu;
+                if (!$(parent).hasClass(ClassName.SHOW)) {
+                    continue;
+                }
+
+                if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $.contains(parent, event.target)) {
+                    continue;
+                }
+
+                var hideEvent = $.Event(Event.HIDE, relatedTarget);
+                $(parent).trigger(hideEvent);
+                if (hideEvent.isDefaultPrevented()) {
+                    continue;
+                }
+
+                // if this is a touch-enabled device we remove the extra
+                // empty mouseover listeners we added for iOS support
+                if ('ontouchstart' in document.documentElement) {
+                    $('body').children().off('mouseover', null, $.noop);
+                }
+
+                toggles[i].setAttribute('aria-expanded', 'false');
+
+                $(selectionMenu).removeClass(ClassName.SHOW);
+                $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
+            }
+        };
+
+        Selection._getParentFromElement = function _getParentFromElement(element) {
+            var parent = void 0;
+            var selector = Util.getSelectorFromElement(element);
+
+            if (selector) {
+                parent = $(selector)[0];
+            }
+
+            return parent || element.parentNode;
+        };
+
+        Selection._dataApiKeydownHandler = function _dataApiKeydownHandler(event) {
+            if (!REGEXP_KEYDOWN.test(event.which) || /button/i.test(event.target.tagName) && event.which === SPACE_KEYCODE || /input|textarea/i.test(event.target.tagName)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (this.disabled || $(this).hasClass(ClassName.DISABLED)) {
+                return;
+            }
+
+            var parent = Selection._getParentFromElement(this);
+            var isActive = $(parent).hasClass(ClassName.SHOW);
+
+            if (!isActive && (event.which !== ESCAPE_KEYCODE || event.which !== SPACE_KEYCODE) || isActive && (event.which === ESCAPE_KEYCODE || event.which === SPACE_KEYCODE)) {
+
+                if (event.which === ESCAPE_KEYCODE) {
+                    var toggle = $(parent).find(Selector.DATA_TOGGLE)[0];
+                    $(toggle).trigger('focus');
+                }
+
+                $(this).trigger('click');
+                return;
+            }
+
+            var items = $(parent).find(Selector.VISIBLE_ITEMS).get();
+
+            if (!items.length) {
+                return;
+            }
+
+            var index = items.indexOf(event.target);
+
+            if (event.which === ARROW_UP_KEYCODE && index > 0) {
+                // up
+                index--;
+            }
+
+            if (event.which === ARROW_DOWN_KEYCODE && index < items.length - 1) {
+                // down
+                index++;
+            }
+
+            if (index < 0) {
+                index = 0;
+            }
+
+            items[index].focus();
+        };
+
+        _createClass(Selection, null, [{
+            key: 'VERSION',
+            get: function get() {
+                return VERSION;
+            }
+        }, {
+            key: 'Default',
+            get: function get() {
+                return Default;
+            }
+        }, {
+            key: 'DefaultType',
+            get: function get() {
+                return DefaultType;
+            }
+        }]);
+
         return Selection;
     }();
 
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+    $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler).on(Event.KEYDOWN_DATA_API, Selector.MENU, Selection._dataApiKeydownHandler).on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearMenus).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        Selection._jQueryInterface.call($(this), 'toggle');
+    }).on(Event.CLICK_DATA_API, Selector.FORM_CHILD, function (e) {
+        e.stopPropagation();
+    });
 
     /**
      * ------------------------------------------------------------------------
@@ -144,5 +413,4 @@
     };
 
     return Selection;
-
-})(jQuery);
+}(jQuery);
