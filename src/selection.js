@@ -14,9 +14,11 @@ var Selection = function ($) {
      */
 
     var NAME = 'selection';
-    var VERSION = '4.0.0-alpha.6';
-    var DATA_KEY = 'bs.selection';
+    var VERSION = '1.0.0';
+    var DATA_KEY = 'ma.selection';
     var EVENT_KEY = '.' + DATA_KEY;
+    var ITEM_KEY = '.item';
+    var BUTTON_CLEAN_KEY = '.btn-clean';
     var DATA_API_KEY = '.data-api';
     var JQUERY_NO_CONFLICT = $.fn[NAME];
     var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
@@ -33,6 +35,8 @@ var Selection = function ($) {
         SHOW: 'show' + EVENT_KEY,
         SHOWN: 'shown' + EVENT_KEY,
         CLICK: 'click' + EVENT_KEY,
+        CLICK_ITEM: 'click' + EVENT_KEY + ITEM_KEY,
+        CLICK_BTN_CLEAN: 'click' + EVENT_KEY + BUTTON_CLEAN_KEY,
         CLICK_DATA_API: 'click' + EVENT_KEY + DATA_API_KEY,
         KEYDOWN_DATA_API: 'keydown' + EVENT_KEY + DATA_API_KEY,
         KEYUP_DATA_API: 'keyup' + EVENT_KEY + DATA_API_KEY
@@ -41,58 +45,43 @@ var Selection = function ($) {
     var ClassName = {
         DISABLED: 'disabled',
         SHOW: 'show',
-        DROPUP: 'dropup',
-        MENURIGHT: 'selection-menu-right',
-        MENULEFT: 'selection-menu-left'
+        CHECKED: 'checked',
+        HIDE: 'hide',
+        MAX_VALUES: 'max-values' //TODO >> must be removed
     };
 
     var Selector = {
+        CAPTION: '.selection-caption',
         DATA_TOGGLE: '[data-toggle="selection"]',
-        FORM_CHILD: '.selection form',
-        MENU: '.selection-menu',
-        NAVBAR_NAV: '.navbar-nav',
-        VISIBLE_ITEMS: '.selection-menu .selection-item:not(.disabled)'
+        CLEAN_BUTTON: '.selection-btn.clean',
+        DROPDOWN: '.selection-dropdown',
+        INPUT: '.selection-input',
+        INPUT_MIN: '.selection-input-min',
+        INPUT_MAX: '.selection-input-max',
+        LIST: '.selection-list',
+        ITEM: '.selection-item',
+        HIDDEN_ITEMS: '.selection-item.hide',
+        VISIBLE_ITEMS: '.selection-item:not(.hide)',
+        ACCEPT_BUTTON: '.selection-action.accept',
+        RESET_BUTTON: '.selection-action.reset',
+        NEW_BUTTON: '.selection-action.new'
     };
 
-    var AttachmentMap = {
-        TOP: 'top-start',
-        TOPEND: 'top-end',
-        BOTTOM: 'bottom-start',
-        BOTTOMEND: 'bottom-end'
-    };
+    /**
+     * ------------------------------------------------------------------------
+     * Class Definition
+     * ------------------------------------------------------------------------
+     */
 
-    var Default = {
-        placement: AttachmentMap.BOTTOM,
-        offset: 0,
-        flip: true
-    };
-
-    var DefaultType = {
-        placement: 'string',
-        offset: '(number|string)',
-        flip: 'boolean'
-
-        /**
-         * ------------------------------------------------------------------------
-         * Class Definition
-         * ------------------------------------------------------------------------
-         */
-
-    };
     var Selection = function () {
         function Selection(element, config) {
-            _classCallCheck(this, Selection);
-
             this._element = element;
-            this._popper = null;
             this._config = this._getConfig(config);
-            this._menu = this._getMenuElement();
-            this._inNavbar = this._detectNavbar();
 
+            this._dropdown = this._getDropdownElement();
+            this._list = this._getListElement();
             this._addEventListeners();
         }
-
-        // getters
 
         // public
 
@@ -102,17 +91,27 @@ var Selection = function ($) {
             }
 
             var parent = Selection._getParentFromElement(this._element);
-            var isActive = $(this._menu).hasClass(ClassName.SHOW);
+            var isVisible = this._dropdown.hasClass(ClassName.SHOW);
 
-            Selection._clearMenus();
+            Selection._clearLists();
 
-            if (isActive) {
+            if (this._config['cleanable'] !== undefined && this._config['cleanable'] === true) {
+                if ($(this._list).find('.checked').length > 0) {
+                    $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
+                }
+                else {
+                    $(this._getCleanButtonElement()).removeClass(ClassName.SHOW);
+                }
+            }
+
+            if (isVisible) {
                 return;
             }
 
             var relatedTarget = {
                 relatedTarget: this._element
             };
+
             var showEvent = $.Event(Event.SHOW, relatedTarget);
 
             $(parent).trigger(showEvent);
@@ -122,57 +121,80 @@ var Selection = function ($) {
             }
 
             var element = this._element;
-            // for dropup with alignment we use the parent as popper container
-            if ($(parent).hasClass(ClassName.DROPUP)) {
-                if ($(this._menu).hasClass(ClassName.MENULEFT) || $(this._menu).hasClass(ClassName.MENURIGHT)) {
-                    element = parent;
-                }
-            }
-            this._popper = new Popper(element, this._menu, this._getPopperConfig());
-
-            // if this is a touch-enabled device we add extra
-            // empty mouseover listeners to the body's immediate children;
-            // only needed because of broken event delegation on iOS
-            // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
-            if ('ontouchstart' in document.documentElement && !$(parent).closest(Selector.NAVBAR_NAV).length) {
-                $('body').children().on('mouseover', null, $.noop);
-            }
 
             this._element.focus();
-            this._element.setAttribute('aria-expanded', true);
+            this._element.setAttribute('aria-expanded', 'true');
 
-            $(this._menu).toggleClass(ClassName.SHOW);
+            $(this._dropdown).toggleClass(ClassName.SHOW);
             $(parent).toggleClass(ClassName.SHOW).trigger($.Event(Event.SHOWN, relatedTarget));
+        };
+
+        Selection.prototype.toggleItem = function selectItem(item) {
+
+            if (this._config['type'] !== undefined) {
+                switch (this._config['type']) {
+                    case 'single':
+                        this._unchekedItems();
+                        $(item).toggleClass(ClassName.CHECKED);
+                        this.toggle();
+                        break;
+                    case 'multi':
+                        $(item).toggleClass(ClassName.CHECKED);
+                        break;
+                    case 'range':
+                        $(item).toggleClass(ClassName.CHECKED);
+                        $(Selector.INPUT_MAX).focus();
+                        break;
+                }
+
+            }
+
         };
 
         Selection.prototype.dispose = function dispose() {
             $.removeData(this._element, DATA_KEY);
             $(this._element).off(EVENT_KEY);
             this._element = null;
-            this._menu = null;
-            if (this._popper !== null) {
-                this._popper.destroy();
-            }
-            this._popper = null;
-        };
-
-        Selection.prototype.update = function update() {
-            this._inNavbar = this._detectNavbar();
-            if (this._popper !== null) {
-                this._popper.scheduleUpdate();
-            }
+            this._list = null;
         };
 
         // private
 
         Selection.prototype._addEventListeners = function _addEventListeners() {
-            var _this9 = this;
+            var _this = this;
 
-            $(this._element).on(Event.CLICK, function (event) {
+            $(this._element).click(function (event) {
+                _this.toggle();
+                // console.log(event.isDefaultPrevented());
+                // event.stopPropagation();
+                // event.preventDefault();
+            });
+
+            $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                _this9.toggle();
+                _this.toggleItem(event.target);
             });
+
+            $(Selection._getParentFromElement(this._element)).on('click', Selector.CLEAN_BUTTON, function (event) {
+                _this._unchekedItems();
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
+            $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MIN, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                $(Selector.LIST).removeClass(ClassName.MAX_VALUES);
+            });
+
+            $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MAX, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                $(Selector.LIST).addClass(ClassName.MAX_VALUES);
+            });
+
+
         };
 
         Selection.prototype._getConfig = function _getConfig(config) {
@@ -183,17 +205,40 @@ var Selection = function ($) {
 
             config = $.extend({}, this.constructor.Default, $(this._element).data(), config);
 
-            Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
-
             return config;
         };
 
-        Selection.prototype._getMenuElement = function _getMenuElement() {
-            if (!this._menu) {
+        Selection.prototype._getDropdownElement = function _getDropdownElement() {
+            if (!this._dropdown) {
                 var parent = Selection._getParentFromElement(this._element);
-                this._menu = $(parent).find(Selector.MENU)[0];
+                this._dropdown = $(parent).children(Selector.DROPDOWN);
             }
-            return this._menu;
+            return this._dropdown;
+        };
+
+        Selection.prototype._getListElement = function _getListElement() {
+            if (!this._list) {
+                var parent = Selection._getParentFromElement(this._element);
+                this._list = $(parent).find(Selector.LIST);
+            }
+            return this._list;
+        };
+
+        Selection.prototype._getCleanButtonElement = function _getCleanButtonElement() {
+            var parent = Selection._getParentFromElement(this._element);
+            var cleanButton = $(parent).find(Selector.CLEAN_BUTTON);
+            if (cleanButton.length > 0) {
+                return cleanButton[0];
+            }
+
+            return undefined;
+        };
+
+        Selection.prototype._unchekedItems = function _uncheckedItems() {
+            var items = this._list;
+            for (var i = 0; i < items.length; i++) {
+                $(items[i]).removeClass(ClassName.CHECKED);
+            }
         };
 
         Selection.prototype._getPlacement = function _getPlacement() {
@@ -201,40 +246,15 @@ var Selection = function ($) {
             var placement = this._config.placement;
 
             // Handle dropup
-            if ($parentSelection.hasClass(ClassName.DROPUP) || this._config.placement === AttachmentMap.TOP) {
-                placement = AttachmentMap.TOP;
-                if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
-                    placement = AttachmentMap.TOPEND;
-                }
-            } else if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
-                placement = AttachmentMap.BOTTOMEND;
-            }
+            // if ($parentSelection.hasClass(ClassName.DROPUP) || this._config.placement === AttachmentMap.TOP) {
+            //     placement = AttachmentMap.TOP;
+            //     if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
+            //         placement = AttachmentMap.TOPEND;
+            //     }
+            // } else if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
+            //     placement = AttachmentMap.BOTTOMEND;
+            // }
             return placement;
-        };
-
-        Selection.prototype._detectNavbar = function _detectNavbar() {
-            return $(this._element).closest('.navbar').length > 0;
-        };
-
-        Selection.prototype._getPopperConfig = function _getPopperConfig() {
-            var popperConfig = {
-                placement: this._getPlacement(),
-                modifiers: {
-                    offset: {
-                        offset: this._config.offset
-                    },
-                    flip: {
-                        enabled: this._config.flip
-                    }
-                }
-
-                // Disable Popper.js for Selection in Navbar
-            };if (this._inNavbar) {
-                popperConfig.modifiers.applyStyle = {
-                    enabled: !this._inNavbar
-                };
-            }
-            return popperConfig;
         };
 
         // static
@@ -242,7 +262,7 @@ var Selection = function ($) {
         Selection._jQueryInterface = function _jQueryInterface(config) {
             return this.each(function () {
                 var data = $(this).data(DATA_KEY);
-                var _config = (typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object' ? config : null;
+                var _config = (typeof config === 'undefined' ? 'undefined' : typeof(config)) === 'object' ? config : null;
 
                 if (!data) {
                     data = new Selection(this, _config);
@@ -258,10 +278,10 @@ var Selection = function ($) {
             });
         };
 
-        Selection._clearMenus = function _clearMenus(event) {
-            if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
-                return;
-            }
+        Selection._clearLists = function _clearLists(event) {
+            // if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
+            //     return;
+            // }
 
             var toggles = $.makeArray($(Selector.DATA_TOGGLE));
             for (var i = 0; i < toggles.length; i++) {
@@ -275,14 +295,15 @@ var Selection = function ($) {
                     continue;
                 }
 
-                var selectionMenu = context._menu;
+                var dropdown = context._dropdown;
+
                 if (!$(parent).hasClass(ClassName.SHOW)) {
                     continue;
                 }
 
-                if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $.contains(parent, event.target)) {
-                    continue;
-                }
+                // if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $.contains(parent, event.target)) {
+                //     continue;
+                // }
 
                 var hideEvent = $.Event(Event.HIDE, relatedTarget);
                 $(parent).trigger(hideEvent);
@@ -298,20 +319,13 @@ var Selection = function ($) {
 
                 toggles[i].setAttribute('aria-expanded', 'false');
 
-                $(selectionMenu).removeClass(ClassName.SHOW);
+                $(dropdown).removeClass(ClassName.SHOW);
                 $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
             }
         };
 
         Selection._getParentFromElement = function _getParentFromElement(element) {
-            var parent = void 0;
-            var selector = Util.getSelectorFromElement(element);
-
-            if (selector) {
-                parent = $(selector)[0];
-            }
-
-            return parent || element.parentNode;
+            return element.parentNode;
         };
 
         Selection._dataApiKeydownHandler = function _dataApiKeydownHandler(event) {
@@ -365,23 +379,6 @@ var Selection = function ($) {
             items[index].focus();
         };
 
-        _createClass(Selection, null, [{
-            key: 'VERSION',
-            get: function get() {
-                return VERSION;
-            }
-        }, {
-            key: 'Default',
-            get: function get() {
-                return Default;
-            }
-        }, {
-            key: 'DefaultType',
-            get: function get() {
-                return DefaultType;
-            }
-        }]);
-
         return Selection;
     }();
 
@@ -391,13 +388,14 @@ var Selection = function ($) {
      * ------------------------------------------------------------------------
      */
 
-    $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler).on(Event.KEYDOWN_DATA_API, Selector.MENU, Selection._dataApiKeydownHandler).on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearMenus).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        Selection._jQueryInterface.call($(this), 'toggle');
-    }).on(Event.CLICK_DATA_API, Selector.FORM_CHILD, function (e) {
-        e.stopPropagation();
-    });
+    $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler)
+        .on(Event.KEYDOWN_DATA_API, Selector.MENU, Selection._dataApiKeydownHandler)
+        .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearMenus)
+        .on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            Selection._jQueryInterface.call($(this), 'toggle');
+        });
 
     /**
      * ------------------------------------------------------------------------

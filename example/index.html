@@ -12,16 +12,41 @@
     <form class="form-inline">
         <div class="form-group">
             <div class="selection">
-                <div class="selection-toggle">
+                <div class="selection-toggle" data-toggle="selection" data-type="range" data-cleanable="true">
                     Country
-                    <button type="button" class="selection-btn clear"></button>
+                    <button type="button" class="selection-btn clean">×</button>
                 </div>
-                <ul class="selection-list show">
-                    <li class="selection-item">Mashhad</li>
-                    <li class="selection-item">Tehran</li>
-                    <li class="selection-item">Isfehan</li>
-                    <li class="selection-item">Yazd</li>
-                </ul>
+                <div class="selection-dropdown">
+                    <div class="selection-input-group">
+                        <input type="text" class="selection-input-min" placeholder="min">
+                        <input type="text" class="selection-input-max" placeholder="max">
+                    </div>
+                    <ul class="selection-list">
+                        <li class="selection-item">500</li>
+                        <li class="selection-item">600</li>
+                        <li class="selection-item">700</li>
+                        <li class="selection-item">800</li>
+                        <li class="selection-item">900</li>
+                        <li class="selection-item">1000</li>
+                        <li class="selection-item">1100</li>
+                        <li class="selection-item">1200</li>
+                        <li class="selection-item">1300</li>
+                        <li class="selection-item">1400</li>
+                        <li class="selection-item">1500</li>
+                        <li class="selection-item">1600</li>
+                        <li class="selection-item">1700</li>
+                        <li class="selection-item">1800</li>
+                        <li class="selection-item">1900</li>
+                        <li class="selection-item">2000</li>
+                    </ul>
+                    <div class="selection-action-group">
+                        <button type="button" class="selection-action accept btn btn-success pull-left">Accept
+                        </button>
+                        <button type="button" class="selection-action reset btn btn-default pull-right">Clear
+                        </button>
+                        <!--<button type="button" class="selection-action new btn btn-block btn-pri">Add New</button>-->
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -30,5 +55,9 @@
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="../src/selection.js"></script>
+<script>
+    $('.selection-toggle').selection();
+
+</script>
 </body>
 </html>
