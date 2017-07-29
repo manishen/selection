@@ -1,163 +1,207 @@
 .selection {
-  position: relative;
+    position: relative;
+    cursor: pointer;
+    font-family: "IRAN Sans Light";
+    background: #EEE;
+    border-radius: 4px;
 
-  [data-toggle] {
-    padding-left: 0.3em;
-    border: 1px solid #cccccc;
+    &.show {
+        background: #DDD;
 
-    &::after {
-      display: inline-block;
-      content: "";
-      vertical-align: 0.225em;
-      border: 0;
-      width: 0;
-      height: 0;
-      margin-right: 0.255em;
-      border-top: 0.3em solid;
-      border-right: 0.3em solid transparent;
-      border-left: 0.3em solid transparent;
+        [data-toggle] {
+            &::after {
+                display: inline-block;
+                content: "";
+                vertical-align: 0.225em;
+                border: 0;
+                width: 0;
+                height: 0;
+                margin-right: 0.255em;
+                border-bottom: 0.3em solid;
+                border-right: 0.3em solid transparent;
+                border-left: 0.3em solid transparent;
+            }
+        }
     }
 
-    .selection-btn.clean {
-      display: none;
-      border: 0;
-      outline: 0;
-      background-color: transparent;
-      text-align: center;
-      color: #ac2925;
-      padding: 0 4px;
-      margin:0;
+    [data-toggle] {
+        padding-left: 0.3em;
+        padding: 8px 15px;
 
-      &.show {
-        display: inline-block!important;
-      }
+        //border: 1px solid #cccccc;
+
+        &::after {
+            display: inline-block;
+            content: "";
+            vertical-align: 0.225em;
+            border: 0;
+            width: 0;
+            height: 0;
+            margin-right: 0.255em;
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-left: 0.3em solid transparent;
+        }
+
+        .selection-btn.clean {
+            display: none;
+            border: 0;
+            outline: 0;
+            background-color: transparent;
+            text-align: center;
+            color: #ac2925;
+            padding: 0 4px;
+            margin: 0;
+
+            &.show {
+                display: inline-block !important;
+            }
+        }
     }
-  }
 }
 
 .selection-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  display: none;
-  float: left;
-  min-width: 200px;
-  padding: 0.5rem 0;
-  margin: 0.125rem 0 0;
-  font-size: 1.3rem;
-  color: #212529;
-  text-align: left;
-  list-style: none;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 0.25rem;
-
-  &.show {
-    display: block!important;
-  }
-
-  .selection-input-group {
-    width: 100%;
-    display: flex;
-
-    .selection-input {
-
-    }
-
-    .selection-input-min,
-    .selection-input-max {
-      display: inline-flex;
-      margin: 0 2px;
-      width:50%;
-    }
-  }
-
-  .selection-list {
-    min-width: 100%;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 200px;
+    margin: 0.125rem 0 0;
     font-size: 1.3rem;
     color: #212529;
-    text-align: right;
+    text-align: left;
     list-style: none;
-    padding: 0;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 0.25rem;
 
-    &.min {
-      text-align: right;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 14px 36px 2px rgba(0, 0, 0, 0.15);
+
+    &.show {
+        display: block !important;
     }
 
-    &.max {
-      text-align: left;
+    .selection-input-group {
+        width: 100%;
+        display: flex;
+
+        .selection-input {
+            width: 100%;
+            margin: 5px;
+        }
+
+        .selection-input-min,
+        .selection-input-max {
+            display: inline-flex;
+            margin: 0 2px;
+            width: 50%;
+        }
     }
 
-    .selection-item {
-      display: block;
-      width: 100%;
-      padding: 0.25rem 1.5rem;
-      clear: both;
-      font-weight: normal;
-      color: #212529;
-      text-align: inherit;
-      white-space: nowrap;
-      background: none;
-      border: 0;
-
-      &:focus, &:hover {
-        color: #16181b;
-        text-decoration: none;
-        background-color: #f8f9fa;
-      }
-
-      &.active, &:active {
-        color: #fff;
-        text-decoration: none;
-        background-color: #007bff;
-      }
-
-      &.disabled, &:disabled {
-        color: #868e96;
-        background-color: transparent;
-      }
-
-      .checkbox {
-        width: 15px;
-        height: 15px;
-        border: 1px solid #868e96;
-        margin: 0 0.25em 0 0;
+    .selection-list {
+        min-width: 100%;
+        font-size: 1.3rem;
+        color: #212529;
+        text-align: right;
+        list-style: none;
         padding: 0;
+        max-height: 200px;
+        overflow: auto;
 
-      }
-
-      &.checked {
-        background-color: #ccdffb;
-
-        .checkbox {
-          background-color: #1b6d85;
-          border-color: #1b6d85;
+        &.multiple {
+            .selection-item {
+                &:before {
+                    font-family: 'Material Design Icons';
+                    padding-left: 10px;
+                    content: '\f131';
+                    vertical-align: sub;
+                    font-size: 1.5rem;
+                }
+            }
         }
-      }
-    }
-  }
 
-  .selection-action-group {
-    .selection-action {
-
-      &.accept {
-
-      }
-
-      &.reset {
-
-      }
-
-      &.new {
-        display: none;
-
-        &.show {
-          display: block;
+        &.min {
+            text-align: right;
         }
-      }
+
+        &.max {
+            text-align: left;
+        }
+
+        .selection-item {
+            display: block;
+            width: 100%;
+            padding: 0.25rem 1.5rem;
+            clear: both;
+            font-weight: normal;
+            color: #212529;
+            text-align: inherit;
+            white-space: nowrap;
+            background: none;
+            border: 0;
+
+            &:focus, &:hover {
+                color: #16181b;
+                text-decoration: none;
+                background-color: #f8f9fa;
+            }
+
+            &.active, &:active {
+                color: #fff;
+                text-decoration: none;
+                background-color: #007bff;
+            }
+
+            &.disabled, &:disabled {
+                color: #868e96;
+                background-color: transparent;
+            }
+
+            .checkbox {
+                width: 15px;
+                height: 15px;
+                border: 1px solid #868e96;
+                margin: 0 0.25em 0 0;
+                padding: 0;
+            }
+
+            &.checked {
+                &:before {
+                    font-family: 'Material Design Icons';
+                    padding-left: 10px;
+                    content: '\f132';
+                }
+
+                .checkbox {
+                    background-color: #1b6d85;
+                    border-color: #1b6d85;
+                }
+            }
+        }
     }
 
-  }
+    .selection-action-group {
+        .selection-action {
+
+            &.accept {
+
+            }
+
+            &.reset {
+
+            }
+
+            &.new {
+                display: none;
+
+                &.show {
+                    display: block;
+                }
+            }
+        }
+
+    }
 }
