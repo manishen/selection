@@ -163,36 +163,35 @@ var Selection = function ($) {
         Selection.prototype._addEventListeners = function _addEventListeners() {
             var _this = this;
 
-            $(this._element).click(function (event) {
+            $(this._element).on(Event.CLICK, function (event) {
+                event.stopPropagation();
+                event.preventDefault();
                 _this.toggle();
-                // console.log(event.isDefaultPrevented());
-                // event.stopPropagation();
-                // event.preventDefault();
             });
 
-            $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                _this.toggleItem(event.target);
-            });
+            // $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
+            //     event.preventDefault();
+            //     event.stopPropagation();
+            //     _this.toggleItem(event.target);
+            // });
 
-            $(Selection._getParentFromElement(this._element)).on('click', Selector.CLEAN_BUTTON, function (event) {
-                _this._unchekedItems();
-                event.preventDefault();
-                event.stopPropagation();
-            });
+            // $(Selection._getParentFromElement(this._element)).on('click', Selector.CLEAN_BUTTON, function (event) {
+            //     _this._unchekedItems();
+            //     event.preventDefault();
+            //     event.stopPropagation();
+            // });
 
-            $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MIN, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                $(Selector.LIST).removeClass(ClassName.MAX_VALUES);
-            });
+            // $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MIN, function (event) {
+            //     event.preventDefault();
+            //     event.stopPropagation();
+            //     $(Selector.LIST).removeClass(ClassName.MAX_VALUES);
+            // });
 
-            $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MAX, function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                $(Selector.LIST).addClass(ClassName.MAX_VALUES);
-            });
+            // $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MAX, function (event) {
+            //     event.preventDefault();
+            //     event.stopPropagation();
+            //     $(Selector.LIST).addClass(ClassName.MAX_VALUES);
+            // });
 
 
         };
@@ -389,7 +388,7 @@ var Selection = function ($) {
      */
 
     $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler)
-        .on(Event.KEYDOWN_DATA_API, Selector.MENU, Selection._dataApiKeydownHandler)
+        .on(Event.KEYDOWN_DATA_API, Selector.DROPDOWN, Selection._dataApiKeydownHandler)
         .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearMenus)
         .on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
             event.preventDefault();
