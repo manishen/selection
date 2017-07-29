@@ -78,12 +78,16 @@
     min-width: 100%;
     font-size: 1.3rem;
     color: #212529;
-    text-align: left;
+    text-align: right;
     list-style: none;
     padding: 0;
 
-    &.max-values {
+    &.min {
       text-align: right;
+    }
+
+    &.max {
+      text-align: left;
     }
 
     .selection-item {
@@ -124,9 +128,13 @@
 
       }
 
-      &.checked .checkbox {
-        background-color: #1b6d85;
-        border-color: #1b6d85;
+      &.checked {
+        background-color: #ccdffb;
+
+        .checkbox {
+          background-color: #1b6d85;
+          border-color: #1b6d85;
+        }
       }
     }
   }
@@ -134,18 +142,22 @@
   .selection-action-group {
     .selection-action {
 
+      &.accept {
+
+      }
+
+      &.reset {
+
+      }
+
+      &.new {
+        display: none;
+
+        &.show {
+          display: block;
+        }
+      }
     }
 
-    .action-accept {
-
-    }
-
-    .action-reset {
-
-    }
-
-    .action-new {
-
-    }
   }
 }

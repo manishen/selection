@@ -62,6 +62,7 @@ var Selection = function ($) {
         ITEM: '.selection-item',
         HIDDEN_ITEMS: '.selection-item.hide',
         VISIBLE_ITEMS: '.selection-item:not(.hide)',
+        CHECKED_ITEMS: '.selection-item.checked',
         ACCEPT_BUTTON: '.selection-action.accept',
         RESET_BUTTON: '.selection-action.reset',
         NEW_BUTTON: '.selection-action.new'
@@ -77,7 +78,7 @@ var Selection = function ($) {
         function Selection(element, config) {
             this._element = element;
             this._config = this._getConfig(config);
-
+            this._parent = Selection._getParentFromElement(element);
             this._dropdown = this._getDropdownElement();
             this._list = this._getListElement();
             this._addEventListeners();
@@ -123,7 +124,7 @@ var Selection = function ($) {
             var element = this._element;
 
             this._element.focus();
-            this._element.setAttribute('aria-expanded', 'true');
+            element.setAttribute('aria-expanded', 'true');
 
             $(this._dropdown).toggleClass(ClassName.SHOW);
             $(parent).toggleClass(ClassName.SHOW).trigger($.Event(Event.SHOWN, relatedTarget));
@@ -149,6 +150,7 @@ var Selection = function ($) {
 
             }
 
+            this._setCaption();
         };
 
         Selection.prototype.dispose = function dispose() {
@@ -169,11 +171,36 @@ var Selection = function ($) {
                 _this.toggle();
             });
 
-            // $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
-            //     event.preventDefault();
-            //     event.stopPropagation();
-            //     _this.toggleItem(event.target);
-            // });
+            $(Selection._getParentFromElement(this._element)).on('keyup', Selector.INPUT, function (event) {
+                var items = $.makeArray(_this._list.find(Selector.ITEM));
+                var term = '';
+                var pattern = '';
+                for(var i in items) {
+                    term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
+                    pattern = String(this.value);
+                    if((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
+                        $(items[i]).removeClass(ClassName.HIDE)
+                    }
+                    else {
+                        $(items[i]).addClass(ClassName.HIDE)
+                    }
+                }
+
+                var visibleItems = $(Selection._getParentFromElement(_this._element)).find(Selector.VISIBLE_ITEMS);
+                if(visibleItems.length === 0) {
+                    $(_this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
+                }
+                else {
+                    $(_this._parent).find(Selector.NEW_BUTTON).removeClass(ClassName.SHOW);
+                }
+            });
+
+
+            $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                _this.toggleItem(event.target);
+            });
 
             // $(Selection._getParentFromElement(this._element)).on('click', Selector.CLEAN_BUTTON, function (event) {
             //     _this._unchekedItems();
@@ -234,10 +261,38 @@ var Selection = function ($) {
         };
 
         Selection.prototype._unchekedItems = function _uncheckedItems() {
-            var items = this._list;
+            var items = $(this._list).children(Selector.CHECKED_ITEMS);
             for (var i = 0; i < items.length; i++) {
                 $(items[i]).removeClass(ClassName.CHECKED);
             }
+        };
+
+        Selection.prototype._setCaption = function _setCaption() {
+            var checkedItems = $(this._parent).find(Selector.CHECKED_ITEMS);
+            var caption = $(this._parent).find(Selector.CAPTION);
+            switch (this._element.getAttribute('data-type')) {
+                case 'single':
+                    if(checkedItems.length) {
+                        $(caption).html(checkedItems[0].getAttribute('data-text'));
+                    }
+                    break;
+                case 'multi':
+                    if(checkedItems.length) {
+                        var text = '';
+                        var limit = 3;
+                        for(var i = 0; i < checkedItems.length && i < limit; i++) {
+                            text += checkedItems[i].getAttribute('data-text') + '، ';
+                        }
+                        if(checkedItems.length > limit) {
+                            text += checkedItems.length - limit;
+                        }
+                        $(caption).html(text);
+                    }
+                    break;
+                case 'range':
+                    break;
+            }
+
         };
 
         Selection.prototype._getPlacement = function _getPlacement() {
@@ -389,7 +444,7 @@ var Selection = function ($) {
 
     $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler)
         .on(Event.KEYDOWN_DATA_API, Selector.DROPDOWN, Selection._dataApiKeydownHandler)
-        .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearMenus)
+        // .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearLists)
         .on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
             event.preventDefault();
             event.stopPropagation();
