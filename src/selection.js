@@ -46,8 +46,7 @@ var Selection = function ($) {
         DISABLED: 'disabled',
         SHOW: 'show',
         CHECKED: 'checked',
-        HIDE: 'hide',
-        MAX_VALUES: 'max-values' //TODO >> must be removed
+        HIDE: 'hide'
     };
 
     var Selector = {
@@ -65,7 +64,8 @@ var Selection = function ($) {
         CHECKED_ITEMS: '.selection-item.checked',
         ACCEPT_BUTTON: '.selection-action.accept',
         RESET_BUTTON: '.selection-action.reset',
-        NEW_BUTTON: '.selection-action.new'
+        NEW_BUTTON: '.selection-action.new',
+        HIDDEN_VALUES: 'input:hidden.value'
     };
 
     /**
@@ -105,6 +105,8 @@ var Selection = function ($) {
                 }
             }
 
+            this._refreshValueInputs();
+
             if (isVisible) {
                 return;
             }
@@ -139,7 +141,7 @@ var Selection = function ($) {
                         $(item).toggleClass(ClassName.CHECKED);
                         this.toggle();
                         break;
-                    case 'multi':
+                    case 'multiple':
                         $(item).toggleClass(ClassName.CHECKED);
                         break;
                     case 'range':
@@ -175,10 +177,10 @@ var Selection = function ($) {
                 var items = $.makeArray(_this._list.find(Selector.ITEM));
                 var term = '';
                 var pattern = '';
-                for(var i in items) {
+                for (var i in items) {
                     term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
                     pattern = String(this.value);
-                    if((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
+                    if ((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
                         $(items[i]).removeClass(ClassName.HIDE)
                     }
                     else {
@@ -187,7 +189,7 @@ var Selection = function ($) {
                 }
 
                 var visibleItems = $(Selection._getParentFromElement(_this._element)).find(Selector.VISIBLE_ITEMS);
-                if(visibleItems.length === 0) {
+                if (visibleItems.length === 0) {
                     $(_this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
                 }
                 else {
@@ -268,31 +270,44 @@ var Selection = function ($) {
         };
 
         Selection.prototype._setCaption = function _setCaption() {
-            var checkedItems = $(this._parent).find(Selector.CHECKED_ITEMS);
-            var caption = $(this._parent).find(Selector.CAPTION);
+            var checkedItems = $(this._list).find(Selector.CHECKED_ITEMS);
+            var $caption = $(this._parent).find(Selector.CAPTION).html('');
+
             switch (this._element.getAttribute('data-type')) {
                 case 'single':
-                    if(checkedItems.length) {
-                        $(caption).html(checkedItems[0].getAttribute('data-text'));
+                    if (checkedItems.length) {
+                        $caption.html('<span class="selection-tag">' + checkedItems[0].getAttribute('data-text') + '</span>');
                     }
                     break;
-                case 'multi':
-                    if(checkedItems.length) {
-                        var text = '';
+                case 'multiple':
+                    if (checkedItems.length) {
                         var limit = 3;
-                        for(var i = 0; i < checkedItems.length && i < limit; i++) {
-                            text += checkedItems[i].getAttribute('data-text') + '، ';
+                        for (var i = 0; i < checkedItems.length && i < limit; i++) {
+                            $caption.append('<span class="selection-tag">' + checkedItems[i].getAttribute('data-text') + '</span>');
                         }
-                        if(checkedItems.length > limit) {
-                            text += checkedItems.length - limit;
+                        if (checkedItems.length > limit) {
+                            $caption.append('<span class="selection-tag number">' + (checkedItems.length - limit) + '</span>');
                         }
-                        $(caption).html(text);
                     }
                     break;
                 case 'range':
                     break;
             }
+        };
 
+        Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
+            var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+
+            $(this._parent).find(Selector.HIDDEN_VALUES).remove();
+            if (checkedItems.length) {
+                for (var i in checkedItems) {
+                    $(this._parent).append(
+                        $('<input type="hidden" class="value">')
+                            .attr('name', this._element.getAttribute('data-name'))
+                            .val(checkedItems[i].getAttribute('data-value'))
+                    );
+                }
+            }
         };
 
         Selection.prototype._getPlacement = function _getPlacement() {
