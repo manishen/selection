@@ -173,7 +173,7 @@ var Selection = function ($) {
                 _this.toggle();
             });
 
-            $(Selection._getParentFromElement(this._element)).on('keyup', Selector.INPUT, function (event) {
+            $(this._parent).on('keyup', Selector.INPUT, function (event) {
                 var items = $.makeArray(_this._list.find(Selector.ITEM));
                 var term = '';
                 var pattern = '';
@@ -197,8 +197,7 @@ var Selection = function ($) {
                 }
             });
 
-
-            $(Selection._getParentFromElement(this._element)).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
+            $(this._parent).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
                 event.preventDefault();
                 event.stopPropagation();
                 _this.toggleItem(event.target);
@@ -308,22 +307,6 @@ var Selection = function ($) {
                     );
                 }
             }
-        };
-
-        Selection.prototype._getPlacement = function _getPlacement() {
-            var $parentSelection = $(this._element).parent();
-            var placement = this._config.placement;
-
-            // Handle dropup
-            // if ($parentSelection.hasClass(ClassName.DROPUP) || this._config.placement === AttachmentMap.TOP) {
-            //     placement = AttachmentMap.TOP;
-            //     if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
-            //         placement = AttachmentMap.TOPEND;
-            //     }
-            // } else if ($(this._menu).hasClass(ClassName.MENURIGHT)) {
-            //     placement = AttachmentMap.BOTTOMEND;
-            // }
-            return placement;
         };
 
         // static
@@ -459,7 +442,7 @@ var Selection = function ($) {
 
     $(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Selection._dataApiKeydownHandler)
         .on(Event.KEYDOWN_DATA_API, Selector.DROPDOWN, Selection._dataApiKeydownHandler)
-        // .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearLists)
+        .on(Event.CLICK_DATA_API + ' ' + Event.KEYUP_DATA_API, Selection._clearLists)
         .on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
             event.preventDefault();
             event.stopPropagation();
