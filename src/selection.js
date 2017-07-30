@@ -82,6 +82,8 @@ var Selection = function ($) {
             this._dropdown = this._getDropdownElement();
             this._list = this._getListElement();
             this._addEventListeners();
+            this._setLabel();
+            this._toggleClearButton();
         }
 
         // public
@@ -95,16 +97,7 @@ var Selection = function ($) {
             var isVisible = this._dropdown.hasClass(ClassName.SHOW);
 
             Selection._clearLists();
-
-            if (this._config['cleanable'] !== undefined && this._config['cleanable'] === true) {
-                if ($(this._list).find('.checked').length > 0) {
-                    $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
-                }
-                else {
-                    $(this._getCleanButtonElement()).removeClass(ClassName.SHOW);
-                }
-            }
-
+            this._toggleClearButton();
             this._refreshValueInputs();
 
             if (isVisible) {
@@ -152,6 +145,7 @@ var Selection = function ($) {
 
             }
 
+            this._toggleClearButton();
             this._setCaption();
         };
 
@@ -171,6 +165,15 @@ var Selection = function ($) {
                 event.stopPropagation();
                 event.preventDefault();
                 _this.toggle();
+            });
+
+            $(this._element).on(Event.CLICK_BTN_CLEAN, Selector.CLEAN_BUTTON, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                _this._unchekedItems();
+                _this._setCaption();
+                $(event.target).removeClass(ClassName.SHOW);
+                _this._setLabel();
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
@@ -203,11 +206,6 @@ var Selection = function ($) {
                 _this.toggleItem(event.target);
             });
 
-            // $(Selection._getParentFromElement(this._element)).on('click', Selector.CLEAN_BUTTON, function (event) {
-            //     _this._unchekedItems();
-            //     event.preventDefault();
-            //     event.stopPropagation();
-            // });
 
             // $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MIN, function (event) {
             //     event.preventDefault();
@@ -271,15 +269,12 @@ var Selection = function ($) {
         Selection.prototype._setCaption = function _setCaption() {
             var checkedItems = $(this._list).find(Selector.CHECKED_ITEMS);
             var $caption = $(this._parent).find(Selector.CAPTION).html('');
-
-            switch (this._element.getAttribute('data-type')) {
-                case 'single':
-                    if (checkedItems.length) {
+            if (checkedItems.length) {
+                switch (this._element.getAttribute('data-type')) {
+                    case 'single':
                         $caption.html('<span class="selection-tag">' + checkedItems[0].getAttribute('data-text') + '</span>');
-                    }
-                    break;
-                case 'multiple':
-                    if (checkedItems.length) {
+                        break;
+                    case 'multiple':
                         var limit = 3;
                         for (var i = 0; i < checkedItems.length && i < limit; i++) {
                             $caption.append('<span class="selection-tag">' + checkedItems[i].getAttribute('data-text') + '</span>');
@@ -287,10 +282,19 @@ var Selection = function ($) {
                         if (checkedItems.length > limit) {
                             $caption.append('<span class="selection-tag number">' + (checkedItems.length - limit) + '</span>');
                         }
-                    }
-                    break;
-                case 'range':
-                    break;
+                        break;
+                    case 'range':
+                        break;
+                }
+            }
+            else {
+                this._setLabel()
+            }
+        };
+
+        Selection.prototype._setLabel = function _setLabel() {
+            if (this._config['label']) {
+                $(this._parent).find(Selector.CAPTION).html(this._config['label']);
             }
         };
 
@@ -307,6 +311,19 @@ var Selection = function ($) {
                     );
                 }
             }
+        };
+
+        Selection.prototype._toggleClearButton = function _toggleClearButton() {
+            if (this._config['cleanable'] === undefined || this._config['cleanable'] === false) {
+                return;
+            }
+
+            if ($(this._list).find(Selector.CHECKED_ITEMS).length > 0) {
+                $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
+                return;
+            }
+
+            $(this._getCleanButtonElement()).removeClass(ClassName.SHOW);
         };
 
         // static
@@ -331,9 +348,9 @@ var Selection = function ($) {
         };
 
         Selection._clearLists = function _clearLists(event) {
-            // if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
-            //     return;
-            // }
+            if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
+                return;
+            }
 
             var toggles = $.makeArray($(Selector.DATA_TOGGLE));
             for (var i = 0; i < toggles.length; i++) {
@@ -353,9 +370,9 @@ var Selection = function ($) {
                     continue;
                 }
 
-                // if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $.contains(parent, event.target)) {
-                //     continue;
-                // }
+                if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $.contains(parent, event.target)) {
+                    continue;
+                }
 
                 var hideEvent = $.Event(Event.HIDE, relatedTarget);
                 $(parent).trigger(hideEvent);
@@ -374,6 +391,7 @@ var Selection = function ($) {
                 $(dropdown).removeClass(ClassName.SHOW);
                 $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
             }
+
         };
 
         Selection._getParentFromElement = function _getParentFromElement(element) {
