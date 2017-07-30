@@ -172,8 +172,11 @@ var Selection = function ($) {
                 event.stopPropagation();
                 _this._unchekedItems();
                 _this._setCaption();
-                $(event.target).removeClass(ClassName.SHOW);
+                _this._toggleClearButton();
                 _this._setLabel();
+                if (_this._dropdown.hasClass(ClassName.SHOW)) {
+                    _this.toggle();
+                }
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
