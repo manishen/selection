@@ -207,6 +207,7 @@ var Selection = function ($) {
                 if (_this._dropdown.hasClass(ClassName.SHOW)) {
                     _this.toggle();
                 }
+                _this._refreshValueInputs();
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
@@ -337,7 +338,6 @@ var Selection = function ($) {
 
         Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
             var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
-
             $(this._parent).find(Selector.HIDDEN_VALUES).remove();
             if (checkedItems.length) {
                 for (var i in checkedItems) {
@@ -427,6 +427,7 @@ var Selection = function ($) {
 
                 $(dropdown).removeClass(ClassName.SHOW);
                 $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
+                Selection._jQueryInterface.call($(toggles[i]), '_refreshValueInputs');
             }
 
         };
