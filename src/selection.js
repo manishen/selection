@@ -47,8 +47,8 @@ var Selection = function ($) {
         SHOW: 'show',
         CHECKED: 'checked',
         HIDE: 'hide',
-        MIN_INPUT: 'min',
-        MAX_INPUT: 'max'
+        MIN: 'min',
+        MAX: 'max'
     };
 
     var Selector = {
@@ -132,7 +132,7 @@ var Selection = function ($) {
             $(parent).toggleClass(ClassName.SHOW).trigger($.Event(Event.SHOWN, relatedTarget));
 
             if (this._config['type'] && this._config['type'] === 'range') {
-                $(this._list).addClass(ClassName.MIN_INPUT).removeClass(ClassName.MAX_INPUT);
+                $(this._list).addClass(ClassName.MIN).removeClass(ClassName.MAX);
             }
 
             var searchInputs = $(this._parent).find(Selector.INPUT);
@@ -157,8 +157,8 @@ var Selection = function ($) {
                         this._unchekedItems();
                         $(item).toggleClass(ClassName.CHECKED);
 
-                        if ($(this._list).hasClass(ClassName.MIN_INPUT)) {
-                            $(this._list).addClass(ClassName.MAX_INPUT).removeClass(ClassName.MIN_INPUT);
+                        if ($(this._list).hasClass(ClassName.MIN)) {
+                            $(this._list).addClass(ClassName.MAX).removeClass(ClassName.MIN);
                             var searchInputMax = $(this._parent).find(Selector.INPUT_MAX);
                             if (searchInputMax.length) {
                                 searchInputMax[0].focus();
@@ -166,7 +166,7 @@ var Selection = function ($) {
                             $(this._parent).find(Selector.INPUT_MIN).val(item.getAttribute('data-text'));
                             this._memory.min = item;
                         }
-                        else if ($(this._list).hasClass(ClassName.MAX_INPUT)) {
+                        else if ($(this._list).hasClass(ClassName.MAX)) {
                             $(this._parent).find(Selector.INPUT_MAX).val(item.getAttribute('data-text'));
                             this._memory.max = item;
                             this.toggle();
@@ -211,6 +211,9 @@ var Selection = function ($) {
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
+                if (_this._config['type'] && _this._config['type'] === "range") {
+                    return;
+                }
                 var items = $.makeArray(_this._list.find(Selector.ITEM));
                 var term = '';
                 var pattern = '';
@@ -240,20 +243,32 @@ var Selection = function ($) {
                 _this.toggleItem(event.target);
             });
 
+            $(this._parent).on('focus', Selector.INPUT, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (_this._config['type'] === undefined) {
+                    return;
+                }
 
-            // $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MIN, function (event) {
-            //     event.preventDefault();
-            //     event.stopPropagation();
-            //     $(Selector.LIST).removeClass(ClassName.MAX_VALUES);
-            // });
-
-            // $(Selection._getParentFromElement(this._element)).on('focus', Selector.INPUT_MAX, function (event) {
-            //     event.preventDefault();
-            //     event.stopPropagation();
-            //     $(Selector.LIST).addClass(ClassName.MAX_VALUES);
-            // });
-
-
+                switch (_this._config['type']) {
+                    case "range":
+                        if ($(event.target).hasClass(ClassName.MIN)) {
+                            $(_this._parent).find(Selector.LIST).addClass(ClassName.MIN).removeClass(ClassName.MAX);
+                            _this._unchekedItems();
+                            if (_this._memory.min && _this._memory.min.getAttribute('data-text') == event.target.value) {
+                                $(_this._memory.min).toggleClass(ClassName.CHECKED);
+                            }
+                        }
+                        if ($(event.target).hasClass(ClassName.MAX)) {
+                            $(_this._parent).find(Selector.LIST).addClass(ClassName.MAX).removeClass(ClassName.MIN);
+                            _this._unchekedItems();
+                            if (_this._memory.max && _this._memory.max.getAttribute('data-text') == event.target.value) {
+                                $(_this._memory.max).toggleClass(ClassName.CHECKED);
+                            }
+                        }
+                        break;
+                }
+            });
         };
 
         Selection.prototype._getConfig = function _getConfig(config) {
@@ -337,8 +352,22 @@ var Selection = function ($) {
         };
 
         Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
-            var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
             $(this._parent).find(Selector.HIDDEN_VALUES).remove();
+
+            if (this._config['type'] && this._config['type'] === 'range') {
+                $(this._parent).append(
+                    $('<input type="hidden" class="value">')
+                        .attr('name', this._element.getAttribute('data-name') + '_min')
+                        .val($(this._parent).find(Selector.INPUT_MIN).val())
+                    ).append(
+                        $('<input type="hidden" class="value">')
+                            .attr('name', this._element.getAttribute('data-name') + '_max')
+                            .val($(this._parent).find(Selector.INPUT_MAX).val())
+                    );
+                return;
+            }
+
+            var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
             if (checkedItems.length) {
                 for (var i in checkedItems) {
                     $(this._parent).append(
