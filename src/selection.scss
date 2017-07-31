@@ -2,9 +2,9 @@
     position: relative;
     cursor: pointer;
     font-family: "IRAN Sans Light";
-    background: #EEE;
+    background: #F2F3F4;
     border-radius: 4px;
-    margin-left: 20px;
+    margin-left: 16px;
 
     &.show {
         background: #DDD;
@@ -24,9 +24,9 @@
     }
 
     [data-toggle] {
-        height: 34px;
+        height: 36px;
         line-height: 2;
-        padding: 0 10px;
+        padding: 0 15px;
 
         &::after {
             font-family: "Material Design Icons";
@@ -91,7 +91,7 @@
     z-index: 1000;
     display: none;
     float: left;
-    min-width: 200px;
+    min-width: 220px;
     margin: 0.125rem 0 0;
     font-size: 1.3rem;
     color: #212529;
@@ -100,7 +100,6 @@
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
-
     border: 1px solid rgba(0, 0, 0, 0.2);
     box-shadow: 0 14px 36px 2px rgba(0, 0, 0, 0.15);
 
@@ -115,9 +114,9 @@
         .selection-input {
             width: 100%;
             border: 0;
-            padding: 5px;
             margin: 5px;
             outline: none;
+            padding: 7px 10px;
             border-radius: 4px;
             background-color: #F2F3F4;
         }
@@ -129,13 +128,18 @@
             width: 50%;
             outline: none;
         }
+
+        .dash {
+            font-size: 1.5em;
+            padding-top: 7px;
+        }
     }
 
     .selection-action-group {
         display: table;
         width: 100%;
         cursor: default;
-        padding: 2px;
+        padding: 5px;
     }
 
     .selection-list {
@@ -146,17 +150,19 @@
         list-style: none;
         padding: 0;
         margin: 0;
-        max-height: 200px;
+        max-height: 280px;
         overflow: auto;
 
         &.multiple {
             .selection-item {
                 &:before {
                     font-family: 'Material Design Icons';
-                    padding-left: 10px;
                     content: '\f131';
+                    color: #D5D5D5;
+                    padding-left: 10px;
+                    font-size: 1.5em;
+                    line-height: 1;
                     vertical-align: sub;
-                    font-size: 1.5rem;
                 }
             }
         }
@@ -172,7 +178,7 @@
         .selection-item {
             display: block;
             width: 100%;
-            padding: 0.25rem 1.5rem;
+            padding: 0.5rem 1.5rem;
             clear: both;
             font-weight: normal;
             color: #212529;
@@ -187,15 +193,15 @@
                 background-color: #f8f9fa;
             }
 
-            &.active, &:active {
+            /*&.active, &:active {
                 color: #fff;
                 text-decoration: none;
                 background-color: #007bff;
-            }
+            }*/
 
             &.disabled, &:disabled {
                 color: #868e96;
-                background-color: transparent;
+                background: transparent;
             }
 
             .checkbox {
@@ -211,6 +217,8 @@
                     font-family: 'Material Design Icons';
                     padding-left: 10px;
                     content: '\f132';
+                    color: #1ec56b;
+                    font-size: 1.5em;
                 }
 
                 .checkbox {
@@ -237,6 +245,7 @@
 
             &.new {
                 display: none;
+                background: red;
 
                 &.show {
                     display: block;
