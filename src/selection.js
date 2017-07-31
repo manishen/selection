@@ -46,7 +46,9 @@ var Selection = function ($) {
         DISABLED: 'disabled',
         SHOW: 'show',
         CHECKED: 'checked',
-        HIDE: 'hide'
+        HIDE: 'hide',
+        MIN_INPUT: 'min',
+        MAX_INPUT: 'max'
     };
 
     var Selector = {
@@ -55,8 +57,8 @@ var Selection = function ($) {
         CLEAN_BUTTON: '.selection-btn.clean',
         DROPDOWN: '.selection-dropdown',
         INPUT: '.selection-input',
-        INPUT_MIN: '.selection-input-min',
-        INPUT_MAX: '.selection-input-max',
+        INPUT_MIN: '.selection-input.min',
+        INPUT_MAX: '.selection-input.max',
         LIST: '.selection-list',
         ITEM: '.selection-item',
         HIDDEN_ITEMS: '.selection-item.hide',
@@ -81,6 +83,11 @@ var Selection = function ($) {
             this._parent = Selection._getParentFromElement(element);
             this._dropdown = this._getDropdownElement();
             this._list = this._getListElement();
+            this._memory = {
+                'min': '',
+                'max': '',
+                'selected': []
+            };
             this._addEventListeners();
             this._setLabel();
             this._toggleClearButton();
@@ -123,6 +130,15 @@ var Selection = function ($) {
 
             $(this._dropdown).toggleClass(ClassName.SHOW);
             $(parent).toggleClass(ClassName.SHOW).trigger($.Event(Event.SHOWN, relatedTarget));
+
+            if (this._config['type'] && this._config['type'] === 'range') {
+                $(this._list).addClass(ClassName.MIN_INPUT).removeClass(ClassName.MAX_INPUT);
+            }
+
+            var searchInputs = $(this._parent).find(Selector.INPUT);
+            if (searchInputs.length) {
+                searchInputs[0].focus();
+            }
         };
 
         Selection.prototype.toggleItem = function selectItem(item) {
@@ -138,11 +154,25 @@ var Selection = function ($) {
                         $(item).toggleClass(ClassName.CHECKED);
                         break;
                     case 'range':
+                        this._unchekedItems();
                         $(item).toggleClass(ClassName.CHECKED);
-                        $(Selector.INPUT_MAX).focus();
+
+                        if ($(this._list).hasClass(ClassName.MIN_INPUT)) {
+                            $(this._list).addClass(ClassName.MAX_INPUT).removeClass(ClassName.MIN_INPUT);
+                            var searchInputMax = $(this._parent).find(Selector.INPUT_MAX);
+                            if (searchInputMax.length) {
+                                searchInputMax[0].focus();
+                            }
+                            $(this._parent).find(Selector.INPUT_MIN).val(item.getAttribute('data-text'));
+                            this._memory.min = item;
+                        }
+                        else if ($(this._list).hasClass(ClassName.MAX_INPUT)) {
+                            $(this._parent).find(Selector.INPUT_MAX).val(item.getAttribute('data-text'));
+                            this._memory.max = item;
+                            this.toggle();
+                        }
                         break;
                 }
-
             }
 
             this._toggleClearButton();
@@ -287,11 +317,15 @@ var Selection = function ($) {
                         }
                         break;
                     case 'range':
+                        $caption.append('<span class="selection-tag">از</span>');
+                        $caption.append($('<span class="selection-tag">').html(this._memory.min.getAttribute('data-text')));
+                        $caption.append('<span class="selection-word"> تا </span>');
+                        $caption.append($('<span class="selection-tag">').html(this._memory.max.getAttribute('data-text')));
                         break;
                 }
             }
             else {
-                this._setLabel()
+                this._setLabel();
             }
         };
 
