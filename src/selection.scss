@@ -1,7 +1,7 @@
 .selection {
     position: relative;
     cursor: pointer;
-    font-family: "IRAN Sans Light","IRANSans";
+    font-family: "IRAN Sans Light", "IRANSans";
     background: #F2F3F4;
     border-radius: 4px;
     margin-left: 16px;
@@ -55,30 +55,45 @@
                 display: inline-block !important;
             }
         }
-    }
 
-    .selection-caption {
-        .selection-tag {
-            &::after {
-                content: "، ";
+        .selection-caption {
+            .selection-label {
+                    padding-left: 3px;
             }
 
-            &:last-child {
+            .selection-tag {
                 &::after {
-                    content: '';
+                    content: "، ";
+                }
+
+                &:last-child {
+                    &::after {
+                        content: '';
+                    }
+                }
+                &.number {
+                    display: inline-block;
+                    min-width: 20px;
+                    height: 20px;
+                    padding: 0 2px;
+                    color: #ffffff;
+                    font-size: 12px;
+                    line-height: 1.6;
+                    text-align: center;
+                    border-radius: 10px;
+                    background-color: #008489;
                 }
             }
-            &.number {
-                display: inline-block;
-                min-width: 20px;
-                height: 20px;
-                padding: 0 2px;
-                color: #ffffff;
-                font-size: 12px;
-                line-height: 1.6;
-                text-align: center;
-                border-radius: 10px;
-                background-color: #008489;
+        }
+
+        &[data-type=range] {
+            .selection-caption {
+                .selection-tag {
+                    &::after {
+                        content: "";
+                        padding: 0 2px;
+                    }
+                }
             }
         }
     }
@@ -153,28 +168,6 @@
         max-height: 280px;
         overflow: auto;
 
-        &.multiple {
-            .selection-item {
-                &:before {
-                    font-family: 'Material Design Icons';
-                    content: '\f131';
-                    color: #D5D5D5;
-                    padding-left: 10px;
-                    font-size: 1.5em;
-                    line-height: 1;
-                    vertical-align: sub;
-                }
-            }
-        }
-
-        &.min {
-            text-align: right;
-        }
-
-        &.max {
-            text-align: left;
-        }
-
         .selection-item {
             display: block;
             width: 100%;
@@ -211,21 +204,49 @@
                 margin: 0 0.25em 0 0;
                 padding: 0;
             }
+        }
 
-            &.checked {
+        &.multiple {
+            .selection-item {
                 &:before {
                     font-family: 'Material Design Icons';
+                    content: '\f131';
+                    color: #D5D5D5;
                     padding-left: 10px;
-                    content: '\f132';
-                    color: #1ec56b;
                     font-size: 1.5em;
+                    line-height: 1;
+                    vertical-align: sub;
                 }
+                &.checked {
+                    &:before {
+                        font-family: 'Material Design Icons';
+                        padding-left: 10px;
+                        content: '\f132';
+                        color: #1ec56b;
+                        font-size: 1.5em;
+                    }
 
-                .checkbox {
-                    background-color: #1b6d85;
-                    border-color: #1b6d85;
+                    .checkbox {
+                        background-color: #1b6d85;
+                        border-color: #1b6d85;
+                    }
                 }
             }
+        }
+
+        &.range {
+            .selection-item {
+                &.checked {
+                    background: #F2F3F4;
+                }
+            }
+        }
+        &.min {
+            text-align: right;
+        }
+
+        &.max {
+            text-align: left;
         }
     }
 
