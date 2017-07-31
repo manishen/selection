@@ -207,6 +207,7 @@ var Selection = function ($) {
                 if (_this._dropdown.hasClass(ClassName.SHOW)) {
                     _this.toggle();
                 }
+                $(_this._parent).find(Selector.INPUT).val('');
                 _this._refreshValueInputs();
             });
 
@@ -299,7 +300,7 @@ var Selection = function ($) {
         };
 
         Selection.prototype._getCleanButtonElement = function _getCleanButtonElement() {
-            var parent = Selection._getParentFromElement(this._element);
+            var parent = this._parent;
             var cleanButton = $(parent).find(Selector.CLEAN_BUTTON);
             if (cleanButton.length > 0) {
                 return cleanButton[0];
@@ -318,30 +319,60 @@ var Selection = function ($) {
         Selection.prototype._setCaption = function _setCaption() {
             var checkedItems = $(this._list).find(Selector.CHECKED_ITEMS);
             var $caption = $(this._parent).find(Selector.CAPTION).html('');
-            if (checkedItems.length) {
-                switch (this._element.getAttribute('data-type')) {
-                    case 'single':
-                        $caption.html('<span class="selection-tag">' + checkedItems[0].getAttribute('data-text') + '</span>');
-                        break;
-                    case 'multiple':
+
+            switch (this._element.getAttribute('data-type')) {
+                case 'single':
+                    if (checkedItems.length) {
+                        $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
+                        $caption.append('<span class="selection-tag">' + checkedItems[0].getAttribute('data-text') + '</span>');
+                    }
+                    else {
+                        this._setLabel();
+                    }
+                    break;
+                case 'multiple':
+                    if (checkedItems.length) {
                         var limit = 3;
+                        $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
                         for (var i = 0; i < checkedItems.length && i < limit; i++) {
                             $caption.append('<span class="selection-tag">' + checkedItems[i].getAttribute('data-text') + '</span>');
                         }
                         if (checkedItems.length > limit) {
                             $caption.append('<span class="selection-tag number">' + (checkedItems.length - limit) + '</span>');
                         }
-                        break;
-                    case 'range':
-                        $caption.append('<span class="selection-tag">از</span>');
-                        $caption.append($('<span class="selection-tag">').html(this._memory.min.getAttribute('data-text')));
-                        $caption.append('<span class="selection-word"> تا </span>');
-                        $caption.append($('<span class="selection-tag">').html(this._memory.max.getAttribute('data-text')));
-                        break;
-                }
-            }
-            else {
-                this._setLabel();
+                    }
+                    else {
+                        this._setLabel();
+                    }
+
+                    break;
+                case 'range':
+                    var valueMin = $(this._parent).find(Selector.INPUT_MIN);
+                    var valueMax = $(this._parent).find(Selector.INPUT_MAX);
+                    valueMin = valueMin.length ? valueMin.val() : undefined;
+                    valueMax = valueMax.length ? valueMax.val() : undefined;
+
+                    this._toggleClearButton();
+
+                    $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
+
+                    if (valueMin) {
+                        if (!valueMax) {
+                            $caption.append('<span class="selection-tag">از</span>');
+                        }
+                        $caption.append($('<span class="selection-tag">').html(valueMin));
+                    }
+                    if (valueMax) {
+                        $caption.append('<span class="selection-tag">تا</span>');
+                        $caption.append($('<span class="selection-tag">').html(valueMax));
+                    }
+
+                    if (!valueMin && !valueMax) {
+                        this._setLabel();
+                        this._unchekedItems();
+                        this._toggleClearButton();
+                    }
+                    break;
             }
         };
 
@@ -355,15 +386,24 @@ var Selection = function ($) {
             $(this._parent).find(Selector.HIDDEN_VALUES).remove();
 
             if (this._config['type'] && this._config['type'] === 'range') {
-                $(this._parent).append(
-                    $('<input type="hidden" class="value">')
-                        .attr('name', this._element.getAttribute('data-name') + '_min')
-                        .val($(this._parent).find(Selector.INPUT_MIN).val())
-                    ).append(
+                var inputMin = $(this._parent).find(Selector.INPUT_MIN);
+                var inputMax = $(this._parent).find(Selector.INPUT_MAX);
+
+                if (inputMin.val()) {
+                    $(this._parent).append(
+                        $('<input type="hidden" class="value">')
+                            .attr('name', this._element.getAttribute('data-name') + '_min')
+                            .val($(this._parent).find(Selector.INPUT_MIN).val())
+                    );
+                }
+
+                if (inputMax.val()) {
+                    $(this._parent).append(
                         $('<input type="hidden" class="value">')
                             .attr('name', this._element.getAttribute('data-name') + '_max')
                             .val($(this._parent).find(Selector.INPUT_MAX).val())
                     );
+                }
                 return;
             }
 
@@ -385,6 +425,11 @@ var Selection = function ($) {
             }
 
             if ($(this._list).find(Selector.CHECKED_ITEMS).length > 0) {
+                $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
+                return;
+            }
+
+            if($(this._parent).find(Selector.INPUT).val()) {
                 $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
                 return;
             }
@@ -457,8 +502,8 @@ var Selection = function ($) {
                 $(dropdown).removeClass(ClassName.SHOW);
                 $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
                 Selection._jQueryInterface.call($(toggles[i]), '_refreshValueInputs');
+                Selection._jQueryInterface.call($(toggles[i]), '_setCaption');
             }
-
         };
 
         Selection._getParentFromElement = function _getParentFromElement(element) {
@@ -548,4 +593,5 @@ var Selection = function ($) {
     };
 
     return Selection;
-}(jQuery);
+}
+(jQuery);
