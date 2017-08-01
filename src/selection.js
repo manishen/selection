@@ -432,8 +432,6 @@ var Selection = function ($) {
                     if (!valueMin && !valueMax) {
                         this._setLabel();
                         this._unchekedItems();
-                        this._toggleClearButton();
-
                     }
                     break;
             }
@@ -696,5 +694,4 @@ var Selection = function ($) {
     };
 
     return Selection;
-}
-(jQuery);
+}(jQuery);
