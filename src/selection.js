@@ -18,7 +18,8 @@ var Selection = function ($) {
     var DATA_KEY = 'ma.selection';
     var EVENT_KEY = '.' + DATA_KEY;
     var ITEM_KEY = '.item';
-    var BUTTON_CLEAN_KEY = '.btn-clean';
+    var BUTTON_CLEAN_KEY = '.btn.clean';
+    var RESET_KEY = '.btn.reset';
     var DATA_API_KEY = '.data-api';
     var JQUERY_NO_CONFLICT = $.fn[NAME];
     var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
@@ -37,6 +38,7 @@ var Selection = function ($) {
         CLICK: 'click' + EVENT_KEY,
         CLICK_ITEM: 'click' + EVENT_KEY + ITEM_KEY,
         CLICK_BTN_CLEAN: 'click' + EVENT_KEY + BUTTON_CLEAN_KEY,
+        CLICK_RESET: 'click' + EVENT_KEY + RESET_KEY,
         CLICK_DATA_API: 'click' + EVENT_KEY + DATA_API_KEY,
         KEYDOWN_DATA_API: 'keydown' + EVENT_KEY + DATA_API_KEY,
         KEYUP_DATA_API: 'keyup' + EVENT_KEY + DATA_API_KEY
@@ -83,10 +85,12 @@ var Selection = function ($) {
             this._parent = Selection._getParentFromElement(element);
             this._dropdown = this._getDropdownElement();
             this._list = this._getListElement();
+            this._minItem = null;
+            this._maxItem = null;
             this._memory = {
                 'min': '',
                 'max': '',
-                'selected': []
+                'selectedItems': []
             };
             this._addEventListeners();
             this._setLabel();
@@ -139,6 +143,8 @@ var Selection = function ($) {
             if (searchInputs.length) {
                 searchInputs[0].focus();
             }
+
+            this._saveMemory();
         };
 
         Selection.prototype.toggleItem = function selectItem(item) {
@@ -164,11 +170,11 @@ var Selection = function ($) {
                                 searchInputMax[0].focus();
                             }
                             $(this._parent).find(Selector.INPUT_MIN).val(item.getAttribute('data-text'));
-                            this._memory.min = item;
+                            this._minItem = item;
                         }
                         else if ($(this._list).hasClass(ClassName.MAX)) {
                             $(this._parent).find(Selector.INPUT_MAX).val(item.getAttribute('data-text'));
-                            this._memory.max = item;
+                            this._maxItem = item;
                             this.toggle();
                         }
                         break;
@@ -184,6 +190,42 @@ var Selection = function ($) {
             $(this._element).off(EVENT_KEY);
             this._element = null;
             this._list = null;
+        };
+
+        Selection.prototype.reset = function reset() {
+            if (this._config['type'] === undefined) {
+                return;
+            }
+
+            switch (this._config['type']) {
+                case "range":
+                    var inputMin = $(this._parent).find(Selector.INPUT_MIN);
+                    var inputMax = $(this._parent).find(Selector.INPUT_MAX);
+
+                    inputMin.val(this._memory.min);
+                    inputMax.val(this._memory.max);
+
+                    this._minItem = null;
+                    this._maxItem = null;
+
+                    var items = $.makeArray($(this._list).find(Selector.ITEM));
+                    for (var i in items) {
+                        if (items[i].getAttribute('data-text') === inputMin.val()) {
+                            this._minItem = items[i];
+                        }
+                        if (items[i].getAttribute('data-text') === inputMax.val()) {
+                            this._maxItem = items[i];
+                        }
+                    }
+                    break;
+                case "multiple":
+                case "single":
+                    this._unchekedItems();
+                    $(this._memory.selectedItems).addClass(ClassName.CHECKED);
+                    break;
+            }
+
+            this.toggle();
         };
 
         // private
@@ -256,19 +298,25 @@ var Selection = function ($) {
                         if ($(event.target).hasClass(ClassName.MIN)) {
                             $(_this._parent).find(Selector.LIST).addClass(ClassName.MIN).removeClass(ClassName.MAX);
                             _this._unchekedItems();
-                            if (_this._memory.min && _this._memory.min.getAttribute('data-text') == event.target.value) {
-                                $(_this._memory.min).toggleClass(ClassName.CHECKED);
+                            if (_this._minItem && _this._minItem.getAttribute('data-text') == event.target.value) {
+                                $(_this._minItem).toggleClass(ClassName.CHECKED);
                             }
                         }
                         if ($(event.target).hasClass(ClassName.MAX)) {
                             $(_this._parent).find(Selector.LIST).addClass(ClassName.MAX).removeClass(ClassName.MIN);
                             _this._unchekedItems();
-                            if (_this._memory.max && _this._memory.max.getAttribute('data-text') == event.target.value) {
-                                $(_this._memory.max).toggleClass(ClassName.CHECKED);
+                            if (_this._maxItem && _this._maxItem.getAttribute('data-text') == event.target.value) {
+                                $(_this._maxItem).toggleClass(ClassName.CHECKED);
                             }
                         }
                         break;
                 }
+            });
+
+            $(this._parent).on(Event.CLICK_RESET, Selector.RESET_BUTTON, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                _this.reset();
             });
         };
 
@@ -385,37 +433,44 @@ var Selection = function ($) {
         Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
             $(this._parent).find(Selector.HIDDEN_VALUES).remove();
 
-            if (this._config['type'] && this._config['type'] === 'range') {
-                var inputMin = $(this._parent).find(Selector.INPUT_MIN);
-                var inputMax = $(this._parent).find(Selector.INPUT_MAX);
-
-                if (inputMin.val()) {
-                    $(this._parent).append(
-                        $('<input type="hidden" class="value">')
-                            .attr('name', this._element.getAttribute('data-name') + '_min')
-                            .val($(this._parent).find(Selector.INPUT_MIN).val())
-                    );
-                }
-
-                if (inputMax.val()) {
-                    $(this._parent).append(
-                        $('<input type="hidden" class="value">')
-                            .attr('name', this._element.getAttribute('data-name') + '_max')
-                            .val($(this._parent).find(Selector.INPUT_MAX).val())
-                    );
-                }
+            if (this._config['type'] === undefined) {
                 return;
             }
 
-            var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
-            if (checkedItems.length) {
-                for (var i in checkedItems) {
-                    $(this._parent).append(
-                        $('<input type="hidden" class="value">')
-                            .attr('name', this._element.getAttribute('data-name'))
-                            .val(checkedItems[i].getAttribute('data-value'))
-                    );
-                }
+            switch (this._config['type']) {
+                case "range":
+                    var inputMin = $(this._parent).find(Selector.INPUT_MIN);
+                    var inputMax = $(this._parent).find(Selector.INPUT_MAX);
+
+                    if (inputMin.val()) {
+                        $(this._parent).append(
+                            $('<input type="hidden" class="value">')
+                                .attr('name', this._element.getAttribute('data-name') + '_min')
+                                .val($(this._parent).find(Selector.INPUT_MIN).val())
+                        );
+                    }
+
+                    if (inputMax.val()) {
+                        $(this._parent).append(
+                            $('<input type="hidden" class="value">')
+                                .attr('name', this._element.getAttribute('data-name') + '_max')
+                                .val($(this._parent).find(Selector.INPUT_MAX).val())
+                        );
+                    }
+                    break;
+                case "multiple":
+                case "single":
+                    var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+                    if (checkedItems.length) {
+                        for (var i in checkedItems) {
+                            $(this._parent).append(
+                                $('<input type="hidden" class="value">')
+                                    .attr('name', this._element.getAttribute('data-name'))
+                                    .val(checkedItems[i].getAttribute('data-value'))
+                            );
+                        }
+                    }
+                    break;
             }
         };
 
@@ -429,12 +484,32 @@ var Selection = function ($) {
                 return;
             }
 
-            if($(this._parent).find(Selector.INPUT).val()) {
+            if ($(this._parent).find(Selector.INPUT).val()) {
                 $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
                 return;
             }
 
             $(this._getCleanButtonElement()).removeClass(ClassName.SHOW);
+        };
+
+        Selection.prototype._saveMemory = function _saveMemory() {
+            if (this._config['type'] === undefined) {
+                return;
+            }
+
+            switch (this._config['type']) {
+                case "range":
+                    var inputMin = $(this._parent).find(Selector.INPUT_MIN);
+                    var inputMax = $(this._parent).find(Selector.INPUT_MAX);
+
+                    this._memory.min = inputMin ? inputMin.val() : null;
+                    this._memory.max = inputMax ? inputMax.val() : null;
+                    break;
+                case "multiple":
+                case "single":
+                    this._memory.selectedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+                    break;
+            }
         };
 
         // static
@@ -593,5 +668,4 @@ var Selection = function ($) {
     };
 
     return Selection;
-}
-(jQuery);
+}(jQuery);
