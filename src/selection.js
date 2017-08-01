@@ -95,6 +95,7 @@ var Selection = function ($) {
             this._addEventListeners();
             this._setLabel();
             this._toggleClearButton();
+            
         }
 
         // public
@@ -109,6 +110,7 @@ var Selection = function ($) {
 
             Selection._clearLists();
             this._toggleClearButton();
+            
             this._refreshValueInputs();
 
             if (isVisible) {
@@ -182,6 +184,7 @@ var Selection = function ($) {
             }
 
             this._toggleClearButton();
+            
             this._setCaption();
         };
 
@@ -228,6 +231,18 @@ var Selection = function ($) {
             this.toggle();
         };
 
+        Selection.prototype.clean = function clean() {
+            this._unchekedItems();
+            var inputs = $(this._parent).find(Selector.INPUT);
+            for(var i = 0; i < inputs.length; i++) {
+                inputs[i].value = '';
+            }
+            Selection._clearLists();
+            this._refreshValueInputs();
+            this._setLabel();
+            this._toggleClearButton();
+        };
+
         // private
 
         Selection.prototype._addEventListeners = function _addEventListeners() {
@@ -242,15 +257,7 @@ var Selection = function ($) {
             $(this._element).on(Event.CLICK_BTN_CLEAN, Selector.CLEAN_BUTTON, function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                _this._unchekedItems();
-                _this._setCaption();
-                _this._toggleClearButton();
-                _this._setLabel();
-                if (_this._dropdown.hasClass(ClassName.SHOW)) {
-                    _this.toggle();
-                }
-                $(_this._parent).find(Selector.INPUT).val('');
-                _this._refreshValueInputs();
+                _this.clean();
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
@@ -401,6 +408,7 @@ var Selection = function ($) {
                     valueMax = valueMax.length ? valueMax.val() : undefined;
 
                     this._toggleClearButton();
+                    
 
                     $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
 
@@ -419,6 +427,7 @@ var Selection = function ($) {
                         this._setLabel();
                         this._unchekedItems();
                         this._toggleClearButton();
+                        
                     }
                     break;
             }
@@ -479,17 +488,30 @@ var Selection = function ($) {
                 return;
             }
 
-            if ($(this._list).find(Selector.CHECKED_ITEMS).length > 0) {
-                $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
+            if (this._config['type'] === undefined) {
                 return;
             }
 
-            if ($(this._parent).find(Selector.INPUT).val()) {
-                $(this._getCleanButtonElement()).addClass(ClassName.SHOW);
-                return;
-            }
+            var button = this._getCleanButtonElement();
 
-            $(this._getCleanButtonElement()).removeClass(ClassName.SHOW);
+            $(button).removeClass(ClassName.SHOW);
+
+            switch (this._config['type']) {
+                case "range":
+                    var minInput = $(this._parent).find(Selector.INPUT_MIN);
+                    var maxInput = $(this._parent).find(Selector.INPUT_MAX);
+                    if (minInput.val() || maxInput.val()) {
+                        $(button).addClass(ClassName.SHOW);
+                        return;
+                    }
+                    break;
+                case "multiple":
+                case "single":
+                    if ($(this._list).find(Selector.CHECKED_ITEMS).length > 0) {
+                        $(button).addClass(ClassName.SHOW);
+                    }
+                    break;
+            }
         };
 
         Selection.prototype._saveMemory = function _saveMemory() {
