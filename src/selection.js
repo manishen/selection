@@ -95,7 +95,7 @@ var Selection = function ($) {
             this._addEventListeners();
             this._setLabel();
             this._toggleClearButton();
-            
+
         }
 
         // public
@@ -110,7 +110,7 @@ var Selection = function ($) {
 
             Selection._clearLists();
             this._toggleClearButton();
-            
+
             this._refreshValueInputs();
 
             if (isVisible) {
@@ -184,7 +184,7 @@ var Selection = function ($) {
             }
 
             this._toggleClearButton();
-            
+
             this._setCaption();
         };
 
@@ -234,7 +234,7 @@ var Selection = function ($) {
         Selection.prototype.clean = function clean() {
             this._unchekedItems();
             var inputs = $(this._parent).find(Selector.INPUT);
-            for(var i = 0; i < inputs.length; i++) {
+            for (var i = 0; i < inputs.length; i++) {
                 inputs[i].value = '';
             }
             Selection._clearLists();
@@ -378,7 +378,10 @@ var Selection = function ($) {
             switch (this._element.getAttribute('data-type')) {
                 case 'single':
                     if (checkedItems.length) {
-                        $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
+                        $caption.html('');
+                        if (this._config['showlabel'] !== undefined && this._config['showlabel'] === "true") {
+                            $caption.append('<span class="selection-label">' + this._config['label'] + '</span>');
+                        }
                         $caption.append('<span class="selection-tag">' + checkedItems[0].getAttribute('data-text') + '</span>');
                     }
                     else {
@@ -388,12 +391,16 @@ var Selection = function ($) {
                 case 'multiple':
                     if (checkedItems.length) {
                         var limit = 3;
-                        $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
+                        $caption.html('');
+
                         for (var i = 0; i < checkedItems.length && i < limit; i++) {
                             $caption.append('<span class="selection-tag">' + checkedItems[i].getAttribute('data-text') + '</span>');
                         }
+
                         if (checkedItems.length > limit) {
-                            $caption.append('<span class="selection-tag number">' + (checkedItems.length - limit) + '</span>');
+                            $caption.html('');
+                            $caption.append('<span class="selection-label">' + this._config['label'] + '</span>');
+                            $caption.append('<span class="selection-tag number">' + checkedItems.length + '</span>');
                         }
                     }
                     else {
@@ -408,10 +415,9 @@ var Selection = function ($) {
                     valueMax = valueMax.length ? valueMax.val() : undefined;
 
                     this._toggleClearButton();
-                    
 
-                    $caption.html('<span class="selection-label">' + this._config['label'] + '</span>');
-
+                    $caption.html('');
+                    $caption.append('<span class="selection-label">' + this._config['label'] + '</span>');
                     if (valueMin) {
                         if (!valueMax) {
                             $caption.append('<span class="selection-tag">از</span>');
@@ -427,7 +433,7 @@ var Selection = function ($) {
                         this._setLabel();
                         this._unchekedItems();
                         this._toggleClearButton();
-                        
+
                     }
                     break;
             }
@@ -690,4 +696,5 @@ var Selection = function ($) {
     };
 
     return Selection;
-}(jQuery);
+}
+(jQuery);
