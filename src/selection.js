@@ -171,11 +171,11 @@ var Selection = function ($) {
                             if (searchInputMax.length) {
                                 searchInputMax[0].focus();
                             }
-                            $(this._parent).find(Selector.INPUT_MIN).val(item.getAttribute('data-text'));
+                            $(this._parent).find(Selector.INPUT_MIN).val((new Intl.NumberFormat).format(item.getAttribute('data-text')));
                             this._minItem = item;
                         }
                         else if ($(this._list).hasClass(ClassName.MAX)) {
-                            $(this._parent).find(Selector.INPUT_MAX).val(item.getAttribute('data-text'));
+                            $(this._parent).find(Selector.INPUT_MAX).val((new Intl.NumberFormat).format(item.getAttribute('data-text')));
                             this._maxItem = item;
                             this.toggle();
                         }
@@ -263,7 +263,34 @@ var Selection = function ($) {
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                _this._search(this);
+                _this._search(this, event);
+            });
+
+            $(this._parent).on('keydown', Selector.INPUT_MIN, Selector.INPUT_MAX, function (event) {
+                // Allow: backspace, delete, tab, escape, enter and .
+                if ($.inArray(event.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+                    // Allow: Ctrl/cmd+A
+                    (event.keyCode == 65 && (event.ctrlKey === true || event.metaKey === true)) ||
+                    // Allow: Ctrl/cmd+C
+                    (event.keyCode == 67 && (event.ctrlKey === true || event.metaKey === true)) ||
+                    // Allow: Ctrl/cmd+X
+                    (event.keyCode == 88 && (event.ctrlKey === true || event.metaKey === true)) ||
+                    // Allow: home, end, left, right
+                    (event.keyCode >= 35 && event.keyCode <= 39)) {
+                    // let it happen, don't do anything
+                    return;
+                }
+
+                if($.inArray(event.key, ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']) !== -1) {
+                    event.preventDefault();
+                    this.value = this.value.concat(String(event.keyCode - 48));
+                    return;
+                }
+
+                // Ensure that it is a number and stop the keypress
+                if ((event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) && (event.keyCode < 96 || event.keyCode > 105)) {
+                    event.preventDefault();
+                }
             });
 
             $(this._parent).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
@@ -517,7 +544,7 @@ var Selection = function ($) {
             }
         };
 
-        Selection.prototype._search = function _search(_this) {
+        Selection.prototype._search = function _search(_this, event) {
             if (this._config['type'] === undefined) {
                 return;
             }
@@ -532,7 +559,9 @@ var Selection = function ($) {
                     if (isNaN(Number(pattern)) || pattern === '') {
                         return;
                     }
-                    term = (new Intl.NumberFormat).format(pattern);
+                    else {
+                        term = (new Intl.NumberFormat).format(pattern);
+                    }
                     _this.value = term;
                     break;
                 case "multiple":
