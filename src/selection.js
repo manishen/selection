@@ -261,30 +261,9 @@ var Selection = function ($) {
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
-                if (_this._config['type'] && _this._config['type'] === "range") {
-                    return;
-                }
-                var items = $.makeArray(_this._list.find(Selector.ITEM));
-                var term = '';
-                var pattern = '';
-                for (var i in items) {
-                    term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
-                    pattern = String(this.value);
-                    if ((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
-                        $(items[i]).removeClass(ClassName.HIDE)
-                    }
-                    else {
-                        $(items[i]).addClass(ClassName.HIDE)
-                    }
-                }
-
-                var visibleItems = $(Selection._getParentFromElement(_this._element)).find(Selector.VISIBLE_ITEMS);
-                if (visibleItems.length === 0) {
-                    $(_this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
-                }
-                else {
-                    $(_this._parent).find(Selector.NEW_BUTTON).removeClass(ClassName.SHOW);
-                }
+                event.preventDefault();
+                event.stopPropagation();
+                _this._search(this);
             });
 
             $(this._parent).on(Event.CLICK_ITEM, Selector.ITEM, function (event) {
@@ -459,7 +438,7 @@ var Selection = function ($) {
                         $(this._parent).append(
                             $('<input type="hidden" class="value">')
                                 .attr('name', this._element.getAttribute('data-name') + '_min')
-                                .val($(this._parent).find(Selector.INPUT_MIN).val())
+                                .val($(this._parent).find(Selector.INPUT_MIN).val().replace(/[,]*/g, ''))
                         );
                     }
 
@@ -467,7 +446,7 @@ var Selection = function ($) {
                         $(this._parent).append(
                             $('<input type="hidden" class="value">')
                                 .attr('name', this._element.getAttribute('data-name') + '_max')
-                                .val($(this._parent).find(Selector.INPUT_MAX).val())
+                                .val($(this._parent).find(Selector.INPUT_MAX).val().replace(/[,]*/g, ''))
                         );
                     }
                     break;
@@ -534,6 +513,48 @@ var Selection = function ($) {
                 case "multiple":
                 case "single":
                     this._memory.selectedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+                    break;
+            }
+        };
+
+        Selection.prototype._search = function _search(_this) {
+            if (this._config['type'] === undefined) {
+                return;
+            }
+
+            var items = [];
+            var term = '';
+            var pattern = String(_this.value);
+
+            switch (this._config['type']) {
+                case "range":
+                    pattern = pattern.replace(/[,]*/g, '');
+                    if (isNaN(Number(pattern)) || pattern === '') {
+                        return;
+                    }
+                    term = (new Intl.NumberFormat).format(pattern);
+                    _this.value = term;
+                    break;
+                case "multiple":
+                case "single":
+                    items = $.makeArray(this._list.find(Selector.ITEM));
+                    for (var i in items) {
+                        term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
+                        if ((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
+                            $(items[i]).removeClass(ClassName.HIDE)
+                        }
+                        else {
+                            $(items[i]).addClass(ClassName.HIDE)
+                        }
+                    }
+
+                    var visibleItems = $(this._parent).find(Selector.VISIBLE_ITEMS);
+                    if (visibleItems.length === 0) {
+                        $(this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
+                    }
+                    else {
+                        $(this._parent).find(Selector.NEW_BUTTON).removeClass(ClassName.SHOW);
+                    }
                     break;
             }
         };
