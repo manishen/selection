@@ -228,6 +228,7 @@ var Selection = function ($) {
                     break;
             }
 
+            this._clearSearch();
             this.toggle();
         };
 
@@ -281,7 +282,7 @@ var Selection = function ($) {
                     return;
                 }
 
-                if($.inArray(event.key, ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']) !== -1) {
+                if ($.inArray(event.key, ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']) !== -1) {
                     event.preventDefault();
                     this.value = this.value.concat(String(event.keyCode - 48));
                     return;
@@ -417,10 +418,20 @@ var Selection = function ($) {
                 case 'range':
                     var valueMin = $(this._parent).find(Selector.INPUT_MIN);
                     var valueMax = $(this._parent).find(Selector.INPUT_MAX);
-                    valueMin = valueMin.length ? valueMin.val() : undefined;
-                    valueMax = valueMax.length ? valueMax.val() : undefined;
+                    valueMin = valueMin.length ? valueMin.val().replace(/[,]*/g, '') : undefined;
+                    valueMax = valueMax.length ? valueMax.val().replace(/[,]*/g, '') : undefined;
 
                     this._toggleClearButton();
+
+                    var convertValueMin = this._shortMoneyNumber(valueMin);
+                    var convertValueMax = this._shortMoneyNumber(valueMax);
+
+                    var valueMinUnit = convertValueMin.unit;
+                    var valueMaxUnit = convertValueMax.unit;
+
+                    if(valueMinUnit === valueMaxUnit) {
+                        valueMinUnit = '';
+                    }
 
                     $caption.html('');
                     $caption.append('<span class="selection-label">' + this._config['label'] + '</span>');
@@ -428,12 +439,16 @@ var Selection = function ($) {
                         if (!valueMax) {
                             $caption.append('<span class="selection-tag">از</span>');
                         }
-                        $caption.append($('<span class="selection-tag">').html(valueMin));
+                        $caption.append($('<span class="selection-tag">').html((new Intl.NumberFormat).format(convertValueMin.num)));
+                        $caption.append($('<span class="selection-tag">').html(valueMinUnit));
                     }
                     if (valueMax) {
                         $caption.append('<span class="selection-tag">تا</span>');
-                        $caption.append($('<span class="selection-tag">').html(valueMax));
+                        $caption.append($('<span class="selection-tag">').html((new Intl.NumberFormat).format(convertValueMax.num)));
+                        $caption.append($('<span class="selection-tag">').html(valueMaxUnit));
                     }
+
+                    $caption.append('<span class="selection-tag">تومان</span>');
 
                     if (!valueMin && !valueMax) {
                         this._setLabel();
@@ -588,6 +603,44 @@ var Selection = function ($) {
             }
         };
 
+        Selection.prototype._shortMoneyNumber = function _shortMoneyNumber(number) {
+            if (isNaN(Number(number))) {
+                return {num: 0, unit: "", real: 0};
+            }
+            var tempNumber = 0;
+            var result = 0;
+
+            if (number >= 1000000000) {
+                tempNumber = number / 1000000000;
+                result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
+                return {"num": result, "unit": "میلیارد", "real": number};
+            } else if (number >= 1000000) {
+                tempNumber = number / 1000000;
+                result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
+                return {"num": result, "unit": "میلیون", "real": number};
+            } else if (number >= 1000) {
+                tempNumber = number / 1000;
+                result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
+                return {"num": result, "unit": "هزار", "real": number};
+            }
+            return {"num": 0, "unit": "", "real": 0};
+        };
+
+        Selection.prototype._clearSearch = function _clearSearch() {
+            if (this._config['type'] === undefined) {
+                return;
+            }
+
+            switch (this._config['type']) {
+                case "multiple":
+                case "single":
+                    $(this._parent).find(Selector.INPUT).val('');
+                    $(this._list).find(Selector.HIDDEN_ITEMS).removeClass(ClassName.HIDE);
+                    break;
+            }
+
+        };
+
         // static
 
         Selection._jQueryInterface = function _jQueryInterface(config) {
@@ -654,6 +707,7 @@ var Selection = function ($) {
                 $(parent).removeClass(ClassName.SHOW).trigger($.Event(Event.HIDDEN, relatedTarget));
                 Selection._jQueryInterface.call($(toggles[i]), '_refreshValueInputs');
                 Selection._jQueryInterface.call($(toggles[i]), '_setCaption');
+                Selection._jQueryInterface.call($(toggles[i]), '_clearSearch');
             }
         };
 
