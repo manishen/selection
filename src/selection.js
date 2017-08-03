@@ -24,6 +24,7 @@ var Selection = function ($) {
     var JQUERY_NO_CONFLICT = $.fn[NAME];
     var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
     var SPACE_KEYCODE = 32; // KeyboardEvent.which value for space key
+    var ENTER_KEYCODE = 13; // KeyboardEvent.which value for enter key
     var TAB_KEYCODE = 9; // KeyboardEvent.which value for tab key
     var ARROW_UP_KEYCODE = 38; // KeyboardEvent.which value for up arrow key
     var ARROW_DOWN_KEYCODE = 40; // KeyboardEvent.which value for down arrow key
@@ -96,6 +97,7 @@ var Selection = function ($) {
             this._setLabel();
             this._toggleClearButton();
 
+            this._element.setAttribute("tabindex", "0");
         }
 
         // public
@@ -429,7 +431,7 @@ var Selection = function ($) {
                     var valueMinUnit = convertValueMin.unit;
                     var valueMaxUnit = convertValueMax.unit;
 
-                    if(valueMinUnit === valueMaxUnit) {
+                    if (valueMinUnit === valueMaxUnit) {
                         valueMinUnit = '';
                     }
 
@@ -716,12 +718,14 @@ var Selection = function ($) {
         };
 
         Selection._dataApiKeydownHandler = function _dataApiKeydownHandler(event) {
-            if (!REGEXP_KEYDOWN.test(event.which) || /button/i.test(event.target.tagName) && event.which === SPACE_KEYCODE || /input|textarea/i.test(event.target.tagName)) {
-                return;
-            }
 
-            event.preventDefault();
-            event.stopPropagation();
+            // if (!REGEXP_KEYDOWN.test(event.which) || /button/i.test(event.target.tagName) && event.which === SPACE_KEYCODE || /input|textarea/i.test(event.target.tagName)) {
+            //     return;
+            // }
+
+
+            // event.preventDefault();
+            // event.stopPropagation();
 
             if (this.disabled || $(this).hasClass(ClassName.DISABLED)) {
                 return;
@@ -729,41 +733,56 @@ var Selection = function ($) {
 
             var parent = Selection._getParentFromElement(this);
             var isActive = $(parent).hasClass(ClassName.SHOW);
+            var toggle = $(parent).find(Selector.DATA_TOGGLE)[0];
 
-            if (!isActive && (event.which !== ESCAPE_KEYCODE || event.which !== SPACE_KEYCODE) || isActive && (event.which === ESCAPE_KEYCODE || event.which === SPACE_KEYCODE)) {
-
-                if (event.which === ESCAPE_KEYCODE) {
-                    var toggle = $(parent).find(Selector.DATA_TOGGLE)[0];
-                    $(toggle).trigger('focus');
-                }
-
-                $(this).trigger('click');
+            if (!isActive && (event.which === SPACE_KEYCODE || event.which === ARROW_DOWN_KEYCODE) && event.target.hasAttribute('data-toggle')) {
+                $(toggle).trigger('click');
                 return;
             }
 
-            var items = $(parent).find(Selector.VISIBLE_ITEMS).get();
-
-            if (!items.length) {
+            if(isActive && event.which === ESCAPE_KEYCODE) {
+                $(toggle).trigger('focus');
+                $(toggle).trigger('click');
                 return;
             }
 
-            var index = items.indexOf(event.target);
 
-            if (event.which === ARROW_UP_KEYCODE && index > 0) {
-                // up
-                index--;
-            }
-
-            if (event.which === ARROW_DOWN_KEYCODE && index < items.length - 1) {
-                // down
-                index++;
-            }
-
-            if (index < 0) {
-                index = 0;
-            }
-
-            items[index].focus();
+            // if (!isActive && (event.which !== ESCAPE_KEYCODE || event.which !== SPACE_KEYCODE) || isActive && (event.which === ESCAPE_KEYCODE || event.which === SPACE_KEYCODE)) {
+            //
+            //     if (event.which === ESCAPE_KEYCODE) {
+            //         var toggle = $(parent).find(Selector.DATA_TOGGLE)[0];
+            //         $(toggle).trigger('focus');
+            //     }
+            //
+            //     $(this).trigger('click');
+            //
+            //     return;
+            // }
+            //
+            // var items = $(parent).find(Selector.VISIBLE_ITEMS).get();
+            //
+            // if (!items.length) {
+            //     return;
+            // }
+            //
+            // var index = items.indexOf(event.target);
+            //
+            // if (event.which === ARROW_UP_KEYCODE && index > 0) {
+            //     // up
+            //     index--;
+            // }
+            //
+            // if (event.which === ARROW_DOWN_KEYCODE && index < items.length - 1) {
+            //     // down
+            //     index++;
+            // }
+            //
+            // if (index < 0) {
+            //     index = 0;
+            // }
+            //
+            // items[index].focus();
+            return;
         };
 
         return Selection;
