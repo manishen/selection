@@ -161,6 +161,10 @@ var Selection = function ($) {
                         this.toggle();
                         break;
                     case 'multiple':
+                        var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS + '[data-similar=' + item.getAttribute('data-similar') + ']'));
+                        if(checkedItems.length === 0) {
+                            this._unchekedItems();
+                        }
                         $(item).toggleClass(ClassName.CHECKED);
                         break;
                     case 'range':
