@@ -588,9 +588,12 @@ var Selection = function ($) {
                 case "multiple":
                 case "single":
                     items = $.makeArray(this._list.find(Selector.ITEM));
+                    pattern = pattern.replace(/[ ]*/g, '');
+
                     for (var i in items) {
                         term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
-                        if ((new RegExp(pattern.replace(/[ ]*/g, ''), "gi")).test(term)) {
+                        term += Selection._convertToLatinChar(term);
+                        if (term.search(pattern) > -1) {
                             $(items[i]).removeClass(ClassName.HIDE)
                         }
                         else {
@@ -787,6 +790,22 @@ var Selection = function ($) {
             //
             // items[index].focus();
             return;
+        };
+
+        Selection._convertToLatinChar = function _convertToLatinChar(text) {
+            var persianChars = ['ا','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','ژ','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ک','گ','ل','م','ن','و','ه','ی','آ','ء','إ','أ','ي','ة','-‌','۱','۲','۳','۴','۵','۶','۷','۸','۹','۰'];
+            var latinChars   = ['h','f','m','j','e','[',']','p','o','n','b','v','c','c','s','a','w','q','x','z','u','y','t','r',';','\'','g','l','k',',','i','d','h','m','f','g','d','j','-‌','1','2','3','4','5','6','7','8','9','0'];
+            var index = 0;
+            var latinText = '';
+
+            for(var i = 0; i < text.length; i++) {
+                index = $.inArray(text[i], persianChars);
+                if(index >= 0) {
+                    latinText += latinChars[index];
+                }
+            }
+
+            return latinText;
         };
 
         return Selection;
