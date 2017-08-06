@@ -162,7 +162,7 @@ var Selection = function ($) {
                         break;
                     case 'multiple':
                         var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS + '[data-similar=' + item.getAttribute('data-similar') + ']'));
-                        if(checkedItems.length === 0) {
+                        if (checkedItems.length === 0) {
                             this._unchekedItems();
                         }
                         $(item).toggleClass(ClassName.CHECKED);
@@ -177,11 +177,11 @@ var Selection = function ($) {
                             if (searchInputMax.length) {
                                 searchInputMax[0].focus();
                             }
-                            $(this._parent).find(Selector.INPUT_MIN).val((new Intl.NumberFormat).format(item.getAttribute('data-text')));
+                            $(this._parent).find(Selector.INPUT_MIN).val(Number(item.getAttribute('data-text')).toLocaleString());
                             this._minItem = item;
                         }
                         else if ($(this._list).hasClass(ClassName.MAX)) {
-                            $(this._parent).find(Selector.INPUT_MAX).val((new Intl.NumberFormat).format(item.getAttribute('data-text')));
+                            $(this._parent).find(Selector.INPUT_MAX).val(Number(item.getAttribute('data-text')).toLocaleString());
                             this._maxItem = item;
                             this.toggle();
                         }
@@ -429,8 +429,30 @@ var Selection = function ($) {
 
                     this._toggleClearButton();
 
-                    var convertValueMin = this._shortMoneyNumber(valueMin);
-                    var convertValueMax = this._shortMoneyNumber(valueMax);
+                    var convertValueMin = 0;
+                    var convertValueMax = 0;
+                    var unitName = "";
+
+                    if (this._config['unit'] !== undefined) {
+                        switch (this._config['unit']) {
+                            case 'money':
+                                convertValueMin = this._shortMoneyNumber(valueMin);
+                                convertValueMax = this._shortMoneyNumber(valueMax);
+                                unitName = "تومان";
+                                break;
+                            case 'area':
+                                convertValueMin = this._shortAreaNumber(valueMin);
+                                convertValueMax = this._shortAreaNumber(valueMax);
+                                unitName = "";
+                                break;
+                            case 'age':
+                                convertValueMin = this._shortAgeNumber(valueMin);
+                                convertValueMax = this._shortAgeNumber(valueMax);
+                                unitName = "";
+                                break;
+                        }
+                    }
+
 
                     var valueMinUnit = convertValueMin.unit;
                     var valueMaxUnit = convertValueMax.unit;
@@ -445,16 +467,22 @@ var Selection = function ($) {
                         if (!valueMax) {
                             $caption.append('<span class="selection-tag">از</span>');
                         }
-                        $caption.append($('<span class="selection-tag">').html((new Intl.NumberFormat).format(convertValueMin.num)));
-                        $caption.append($('<span class="selection-tag">').html(valueMinUnit));
+                        var min = Number(convertValueMin.num);
+                        $caption.append($('<span class="selection-tag">').html(isNaN(min) ? convertValueMin.num : min.toLocaleString()));
+                        if (valueMinUnit !== '') {
+                            $caption.append($('<span class="selection-tag">').html(valueMinUnit));
+                        }
                     }
                     if (valueMax) {
+                        var max = Number(convertValueMax.num);
                         $caption.append('<span class="selection-tag">تا</span>');
-                        $caption.append($('<span class="selection-tag">').html((new Intl.NumberFormat).format(convertValueMax.num)));
+                        $caption.append($('<span class="selection-tag">').html(isNaN(max) ? convertValueMax.num : max.toLocaleString()));
                         $caption.append($('<span class="selection-tag">').html(valueMaxUnit));
                     }
 
-                    $caption.append('<span class="selection-tag">تومان</span>');
+                    if (unitName !== "") {
+                        $caption.append('<span class="selection-tag">' + unitName + '</span>');
+                    }
 
                     if (!valueMin && !valueMax) {
                         this._setLabel();
@@ -571,6 +599,8 @@ var Selection = function ($) {
             }
 
             var items = [];
+            var visibleItems = [];
+            var i = 0;
             var term = '';
             var pattern = String(_this.value);
 
@@ -581,19 +611,18 @@ var Selection = function ($) {
                         return;
                     }
                     else {
-                        term = (new Intl.NumberFormat).format(pattern);
+                        term = Number(pattern).toLocaleString();
                     }
                     _this.value = term;
                     break;
                 case "multiple":
-                case "single":
                     items = $.makeArray(this._list.find(Selector.ITEM));
-                    pattern = pattern.replace(/[ ]*/g, '');
+                    pattern = pattern.replace(/[ ]*/g, '').toLowerCase();
 
-                    for (var i in items) {
-                        term = items[i].getAttribute('data-text').replace(/[ ]*/g, '');
+                    for (i in items) {
+                        term = items[i].getAttribute('data-text').replace(/[ ]*/g, '').toLowerCase();
                         term += Selection._convertToLatinChar(term);
-                        if (term.search(pattern) > -1) {
+                        if (term.indexOf(pattern) > -1) {
                             $(items[i]).removeClass(ClassName.HIDE)
                         }
                         else {
@@ -601,7 +630,30 @@ var Selection = function ($) {
                         }
                     }
 
-                    var visibleItems = $(this._parent).find(Selector.VISIBLE_ITEMS);
+                    visibleItems = $(this._parent).find(Selector.VISIBLE_ITEMS);
+                    if (visibleItems.length === 0) {
+                        $(this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
+                    }
+                    else {
+                        $(this._parent).find(Selector.NEW_BUTTON).removeClass(ClassName.SHOW);
+                    }
+                    break;
+                case "single":
+                    items = $.makeArray(this._list.find(Selector.ITEM));
+                    pattern = pattern.replace(/[ ]*/g, '').toLowerCase();
+
+                    for (i in items) {
+                        term = items[i].getAttribute('data-text').replace(/[ ]*/g, '').toLowerCase();
+                        term += Selection._convertToLatinChar(term);
+                        if (term.indexOf(pattern) > -1) {
+                            $(items[i]).removeClass(ClassName.HIDE)
+                        }
+                        else {
+                            $(items[i]).addClass(ClassName.HIDE)
+                        }
+                    }
+
+                    visibleItems = $(this._parent).find(Selector.VISIBLE_ITEMS);
                     if (visibleItems.length === 0) {
                         $(this._parent).find(Selector.NEW_BUTTON).addClass(ClassName.SHOW);
                     }
@@ -622,17 +674,53 @@ var Selection = function ($) {
             if (number >= 1000000000) {
                 tempNumber = number / 1000000000;
                 result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
-                return {"num": result, "unit": "میلیارد", "real": number};
+                return {num: result, unit: "میلیارد", real: number};
             } else if (number >= 1000000) {
                 tempNumber = number / 1000000;
                 result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
-                return {"num": result, "unit": "میلیون", "real": number};
+                return {num: result, unit: "میلیون", real: number};
             } else if (number >= 1000) {
                 tempNumber = number / 1000;
                 result = (tempNumber == parseInt(tempNumber)) ? String(tempNumber) : parseFloat(tempNumber);
-                return {"num": result, "unit": "هزار", "real": number};
+                return {num: result, unit: "هزار", real: number};
             }
-            return {"num": 0, "unit": "", "real": 0};
+            return {num: number, unit: "", real: number};
+        };
+
+        Selection.prototype._shortAreaNumber = function _shortAreaNumber(number) {
+            if (isNaN(Number(number))) {
+                return {num: 0, unit: "", real: 0};
+            }
+            var tempNumber = 0;
+            var result = 0;
+
+            if (number >= 10000) {
+                tempNumber = number / 10000;
+                result = tempNumber;
+                return {num: result, unit: "هکتار", real: number};
+            }
+            else if (number >= 1000) {
+                tempNumber = number / 1000;
+                result = tempNumber;
+                return {num: result, unit: "هزار متر", real: number};
+            }
+
+            return {num: number, unit: "متر", real: number};
+        };
+
+        Selection.prototype._shortAgeNumber = function _shortAgeNumber(number) {
+            if (isNaN(Number(number))) {
+                return {num: 0, unit: "", real: 0};
+            }
+
+            var tempNumber = 0;
+            var result = 0;
+
+            if (Number(number) === 0) {
+                return {num: "نوساز", unit: "", real: number};
+            }
+
+            return {num: number, unit: "سال", real: number};
         };
 
         Selection.prototype._clearSearch = function _clearSearch() {
@@ -747,7 +835,7 @@ var Selection = function ($) {
                 return;
             }
 
-            if(isActive && event.which === ESCAPE_KEYCODE) {
+            if (isActive && event.which === ESCAPE_KEYCODE) {
                 $(toggle).trigger('focus');
                 $(toggle).trigger('click');
                 return;
@@ -793,14 +881,14 @@ var Selection = function ($) {
         };
 
         Selection._convertToLatinChar = function _convertToLatinChar(text) {
-            var persianChars = ['ا','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','ژ','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ک','گ','ل','م','ن','و','ه','ی','آ','ء','إ','أ','ي','ة','-‌','۱','۲','۳','۴','۵','۶','۷','۸','۹','۰'];
-            var latinChars   = ['h','f','m','j','e','[',']','p','o','n','b','v','c','c','s','a','w','q','x','z','u','y','t','r',';','\'','g','l','k',',','i','d','h','m','f','g','d','j','-‌','1','2','3','4','5','6','7','8','9','0'];
+            var persianChars = ['ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی', 'آ', 'ء', 'إ', 'أ', 'ي', 'ة', '-‌', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹', '۰'];
+            var latinChars = ['h', 'f', 'm', 'j', 'e', '[', ']', 'p', 'o', 'n', 'b', 'v', 'c', 'c', 's', 'a', 'w', 'q', 'x', 'z', 'u', 'y', 't', 'r', ';', '\'', 'g', 'l', 'k', ',', 'i', 'd', 'h', 'm', 'f', 'g', 'd', 'j', '-‌', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
             var index = 0;
             var latinText = '';
 
-            for(var i = 0; i < text.length; i++) {
+            for (var i = 0; i < text.length; i++) {
                 index = $.inArray(text[i], persianChars);
-                if(index >= 0) {
+                if (index >= 0) {
                     latinText += latinChars[index];
                 }
             }
