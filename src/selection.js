@@ -36,6 +36,7 @@ var Selection = function ($) {
         HIDDEN: 'hidden' + EVENT_KEY,
         SHOW: 'show' + EVENT_KEY,
         SHOWN: 'shown' + EVENT_KEY,
+        CHANGE: 'change' + EVENT_KEY,
         CLICK: 'click' + EVENT_KEY,
         CLICK_ITEM: 'click' + EVENT_KEY + ITEM_KEY,
         CLICK_BTN_CLEAN: 'click' + EVENT_KEY + BUTTON_CLEAN_KEY,
@@ -153,11 +154,17 @@ var Selection = function ($) {
 
         Selection.prototype.toggleItem = function selectItem(item) {
 
+            var relatedTarget = {
+                relatedTarget: item
+            };
+            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
+
             if (this._config['type'] !== undefined) {
                 switch (this._config['type']) {
                     case 'single':
                         this._unchekedItems();
                         $(item).toggleClass(ClassName.CHECKED);
+                        $(this._parent).trigger(changeEvent);
                         this.toggle();
                         break;
                     case 'multiple':
@@ -166,6 +173,7 @@ var Selection = function ($) {
                             this._unchekedItems();
                         }
                         $(item).toggleClass(ClassName.CHECKED);
+                        $(this._parent).trigger(changeEvent);
                         break;
                     case 'range':
                         this._unchekedItems();
@@ -185,6 +193,7 @@ var Selection = function ($) {
                             this._maxItem = item;
                             this.toggle();
                         }
+                        $(this._parent).trigger(changeEvent);
                         break;
                 }
             }
@@ -195,16 +204,21 @@ var Selection = function ($) {
         };
 
         Selection.prototype.dispose = function dispose() {
-            $.removeData(this._element, DATA_KEY);
-            $(this._element).off(EVENT_KEY);
-            this._element = null;
-            this._list = null;
+            // $.removeData(this._element, DATA_KEY);
+            // $(this._element).off(EVENT_KEY);
+            // this._element = null;
+            // this._list = null;
         };
 
         Selection.prototype.reset = function reset() {
             if (this._config['type'] === undefined) {
                 return;
             }
+
+            var relatedTarget = {
+                relatedTarget: undefined
+            };
+            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
 
             switch (this._config['type']) {
                 case "range":
@@ -236,9 +250,15 @@ var Selection = function ($) {
 
             this._clearSearch();
             this.toggle();
+            $(this._parent).trigger(changeEvent);
         };
 
         Selection.prototype.clean = function clean() {
+            var relatedTarget = {
+                relatedTarget: undefined
+            };
+            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
+
             this._unchekedItems();
             var inputs = $(this._parent).find(Selector.INPUT);
             for (var i = 0; i < inputs.length; i++) {
@@ -248,6 +268,7 @@ var Selection = function ($) {
             this._refreshValueInputs();
             this._setLabel();
             this._toggleClearButton();
+            $(this._parent).trigger(changeEvent);
         };
 
         // private
