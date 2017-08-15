@@ -96,7 +96,7 @@ var Selection = function ($) {
             };
             this._addEventListeners();
             this._setLabel();
-            this._toggleClearButton();
+            this._toggleCleanButton();
 
             this._element.setAttribute("tabindex", "0");
         }
@@ -112,7 +112,7 @@ var Selection = function ($) {
             var isVisible = this._dropdown.hasClass(ClassName.SHOW);
 
             Selection._clearLists();
-            this._toggleClearButton();
+            this._toggleCleanButton();
 
             this._refreshValueInputs();
 
@@ -198,7 +198,7 @@ var Selection = function ($) {
                 }
             }
 
-            this._toggleClearButton();
+            this._toggleCleanButton();
 
             this._setCaption();
         };
@@ -267,8 +267,14 @@ var Selection = function ($) {
             Selection._clearLists();
             this._refreshValueInputs();
             this._setLabel();
-            this._toggleClearButton();
+            this._toggleCleanButton();
             $(this._parent).trigger(changeEvent);
+        };
+
+        Selection.prototype.refresh = function refresh() {
+            this._setCaption();
+            this._refreshValueInputs();
+            this._toggleCleanButton();
         };
 
         // private
@@ -448,7 +454,7 @@ var Selection = function ($) {
                     valueMin = valueMin.length ? valueMin.val().replace(/[,]*/g, '') : undefined;
                     valueMax = valueMax.length ? valueMax.val().replace(/[,]*/g, '') : undefined;
 
-                    this._toggleClearButton();
+                    this._toggleCleanButton();
 
                     var convertValueMin = 0;
                     var convertValueMax = 0;
@@ -563,7 +569,7 @@ var Selection = function ($) {
             }
         };
 
-        Selection.prototype._toggleClearButton = function _toggleClearButton() {
+        Selection.prototype._toggleCleanButton = function _toggleCleanButton() {
             if (this._config['cleanable'] === undefined || this._config['cleanable'] === false) {
                 return;
             }
