@@ -526,6 +526,9 @@ var Selection = function ($) {
         };
 
         Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
+            var checkedItems;
+            var i;
+
             $(this._parent).find(Selector.HIDDEN_VALUES).remove();
 
             if (this._config['type'] === undefined) {
@@ -554,10 +557,21 @@ var Selection = function ($) {
                     }
                     break;
                 case "multiple":
-                case "single":
-                    var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+                    checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
                     if (checkedItems.length) {
-                        for (var i in checkedItems) {
+                        for (i in checkedItems) {
+                            $(this._parent).append(
+                                $('<input type="hidden" class="value">')
+                                    .attr('name', this._element.getAttribute('data-name') + '[]')
+                                    .val(checkedItems[i].getAttribute('data-value'))
+                            );
+                        }
+                    }
+                    break;
+                case "single":
+                    checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
+                    if (checkedItems.length) {
+                        for (i in checkedItems) {
                             $(this._parent).append(
                                 $('<input type="hidden" class="value">')
                                     .attr('name', this._element.getAttribute('data-name'))
