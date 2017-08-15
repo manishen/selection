@@ -543,7 +543,7 @@ var Selection = function ($) {
                     if (inputMin.val()) {
                         $(this._parent).append(
                             $('<input type="hidden" class="value">')
-                                .attr('name', this._element.getAttribute('data-name') + '_min')
+                                .attr('name',  'min_' + this._element.getAttribute('data-name'))
                                 .val($(this._parent).find(Selector.INPUT_MIN).val().replace(/[,]*/g, ''))
                         );
                     }
@@ -551,7 +551,7 @@ var Selection = function ($) {
                     if (inputMax.val()) {
                         $(this._parent).append(
                             $('<input type="hidden" class="value">')
-                                .attr('name', this._element.getAttribute('data-name') + '_max')
+                                .attr('name', 'max_' + this._element.getAttribute('data-name'))
                                 .val($(this._parent).find(Selector.INPUT_MAX).val().replace(/[,]*/g, ''))
                         );
                     }
