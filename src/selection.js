@@ -264,7 +264,7 @@ var Selection = function ($) {
             for (var i = 0; i < inputs.length; i++) {
                 inputs[i].value = '';
             }
-            Selection._clearLists();
+
             this._refreshValueInputs();
             this._setLabel();
             this._toggleCleanButton();
@@ -292,6 +292,7 @@ var Selection = function ($) {
                 event.preventDefault();
                 event.stopPropagation();
                 _this.clean();
+                Selection._clearLists();
             });
 
             $(this._parent).on('keyup', Selector.INPUT, function (event) {
