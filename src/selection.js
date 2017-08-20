@@ -185,11 +185,11 @@ var Selection = function ($) {
                             if (searchInputMax.length) {
                                 searchInputMax[0].focus();
                             }
-                            $(this._parent).find(Selector.INPUT_MIN).val(Number(item.getAttribute('data-text')).toLocaleString());
+                            $(this._parent).find(Selector.INPUT_MIN).val(Number(item.getAttribute('data-text')).toLocaleString('en')());
                             this._minItem = item;
                         }
                         else if ($(this._list).hasClass(ClassName.MAX)) {
-                            $(this._parent).find(Selector.INPUT_MAX).val(Number(item.getAttribute('data-text')).toLocaleString());
+                            $(this._parent).find(Selector.INPUT_MAX).val(Number(item.getAttribute('data-text')).toLocaleString('en')());
                             this._maxItem = item;
                             this.toggle();
                         }
@@ -496,7 +496,7 @@ var Selection = function ($) {
                             $caption.append('<span class="selection-tag">از</span>');
                         }
                         var min = Number(convertValueMin.num);
-                        $caption.append($('<span class="selection-tag">').html(isNaN(min) ? convertValueMin.num : min.toLocaleString()));
+                        $caption.append($('<span class="selection-tag">').html(isNaN(min) ? convertValueMin.num : min.toLocaleString('en')()));
                         if (valueMinUnit !== '') {
                             $caption.append($('<span class="selection-tag">').html(valueMinUnit));
                         }
@@ -504,7 +504,7 @@ var Selection = function ($) {
                     if (valueMax) {
                         var max = Number(convertValueMax.num);
                         $caption.append('<span class="selection-tag">تا</span>');
-                        $caption.append($('<span class="selection-tag">').html(isNaN(max) ? convertValueMax.num : max.toLocaleString()));
+                        $caption.append($('<span class="selection-tag">').html(isNaN(max) ? convertValueMax.num : max.toLocaleString('en')()));
                         $caption.append($('<span class="selection-tag">').html(valueMaxUnit));
                     }
 
@@ -653,7 +653,7 @@ var Selection = function ($) {
                         return;
                     }
                     else {
-                        term = Number(pattern).toLocaleString();
+                        term = Number(pattern).toLocaleString('en')();
                     }
                     _this.value = term;
                     break;
