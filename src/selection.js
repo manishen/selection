@@ -36,7 +36,7 @@ var Selection = function ($) {
         HIDDEN: 'hidden' + EVENT_KEY,
         SHOW: 'show' + EVENT_KEY,
         SHOWN: 'shown' + EVENT_KEY,
-        CHANGE: 'change' + EVENT_KEY,
+        CHANGE: 'changed' + EVENT_KEY,
         CLICK: 'click' + EVENT_KEY,
         CLICK_ITEM: 'click' + EVENT_KEY + ITEM_KEY,
         CLICK_BTN_CLEAN: 'click' + EVENT_KEY + BUTTON_CLEAN_KEY,
@@ -114,9 +114,8 @@ var Selection = function ($) {
             Selection._clearLists();
             this._toggleCleanButton();
 
-            this._refreshValueInputs();
-
             if (isVisible) {
+                this._refreshValueInputs();
                 return;
             }
 
@@ -154,17 +153,17 @@ var Selection = function ($) {
 
         Selection.prototype.toggleItem = function selectItem(item) {
 
-            var relatedTarget = {
-                relatedTarget: item
-            };
-            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
+            // var relatedTarget = {
+            //     relatedTarget: item
+            // };
+            // var changeEvent = $.Event(Event.CHANGE, relatedTarget);
 
             if (this._config['type'] !== undefined) {
                 switch (this._config['type']) {
                     case 'single':
                         this._unchekedItems();
                         $(item).toggleClass(ClassName.CHECKED);
-                        $(this._parent).trigger(changeEvent);
+                        //$(this._parent).trigger(changeEvent);
                         this.toggle();
                         break;
                     case 'multiple':
@@ -173,7 +172,7 @@ var Selection = function ($) {
                             this._unchekedItems();
                         }
                         $(item).toggleClass(ClassName.CHECKED);
-                        $(this._parent).trigger(changeEvent);
+                        //$(this._parent).trigger(changeEvent);
                         break;
                     case 'range':
                         this._unchekedItems();
@@ -185,15 +184,15 @@ var Selection = function ($) {
                             if (searchInputMax.length) {
                                 searchInputMax[0].focus();
                             }
-                            $(this._parent).find(Selector.INPUT_MIN).val(Number(item.getAttribute('data-text')).toLocaleString('en')());
+                            $(this._parent).find(Selector.INPUT_MIN).val(Number(item.getAttribute('data-text')).toLocaleString('en'));
                             this._minItem = item;
                         }
                         else if ($(this._list).hasClass(ClassName.MAX)) {
-                            $(this._parent).find(Selector.INPUT_MAX).val(Number(item.getAttribute('data-text')).toLocaleString('en')());
+                            $(this._parent).find(Selector.INPUT_MAX).val(Number(item.getAttribute('data-text')).toLocaleString('en'));
                             this._maxItem = item;
                             this.toggle();
                         }
-                        $(this._parent).trigger(changeEvent);
+                        //$(this._parent).trigger(changeEvent);
                         break;
                 }
             }
@@ -215,10 +214,10 @@ var Selection = function ($) {
                 return;
             }
 
-            var relatedTarget = {
-                relatedTarget: undefined
-            };
-            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
+            // var relatedTarget = {
+            //     relatedTarget: undefined
+            // };
+            // var changeEvent = $.Event(Event.CHANGE, relatedTarget);
 
             switch (this._config['type']) {
                 case "range":
@@ -250,14 +249,14 @@ var Selection = function ($) {
 
             this._clearSearch();
             this.toggle();
-            $(this._parent).trigger(changeEvent);
+            //$(this._parent).trigger(changeEvent);
         };
 
         Selection.prototype.clean = function clean() {
-            var relatedTarget = {
-                relatedTarget: undefined
-            };
-            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
+            // var relatedTarget = {
+            //     relatedTarget: undefined
+            // };
+            // var changeEvent = $.Event(Event.CHANGE, relatedTarget);
 
             this._unchekedItems();
             var inputs = $(this._parent).find(Selector.INPUT);
@@ -268,7 +267,7 @@ var Selection = function ($) {
             this._refreshValueInputs();
             this._setLabel();
             this._toggleCleanButton();
-            $(this._parent).trigger(changeEvent);
+            //$(this._parent).trigger(changeEvent);
         };
 
         Selection.prototype.refresh = function refresh() {
@@ -496,7 +495,7 @@ var Selection = function ($) {
                             $caption.append('<span class="selection-tag">از</span>');
                         }
                         var min = Number(convertValueMin.num);
-                        $caption.append($('<span class="selection-tag">').html(isNaN(min) ? convertValueMin.num : min.toLocaleString('en')()));
+                        $caption.append($('<span class="selection-tag">').html(isNaN(min) ? convertValueMin.num : min.toLocaleString('en')));
                         if (valueMinUnit !== '') {
                             $caption.append($('<span class="selection-tag">').html(valueMinUnit));
                         }
@@ -504,7 +503,7 @@ var Selection = function ($) {
                     if (valueMax) {
                         var max = Number(convertValueMax.num);
                         $caption.append('<span class="selection-tag">تا</span>');
-                        $caption.append($('<span class="selection-tag">').html(isNaN(max) ? convertValueMax.num : max.toLocaleString('en')()));
+                        $caption.append($('<span class="selection-tag">').html(isNaN(max) ? convertValueMax.num : max.toLocaleString('en')));
                         $caption.append($('<span class="selection-tag">').html(valueMaxUnit));
                     }
 
@@ -528,9 +527,22 @@ var Selection = function ($) {
 
         Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
             var checkedItems;
-            var i;
+            var i, index;
+            var hiddenValues;
+            var equalsCount = 0;
+            var isChanged = false;
+            var relatedTarget = {
+                relatedTarget: this._element
+            };
+            var changeEvent = $.Event(Event.CHANGE, relatedTarget);
 
-            $(this._parent).find(Selector.HIDDEN_VALUES).remove();
+            var hiddenValueElements = $.makeArray($(this._parent).find(Selector.HIDDEN_VALUES).remove());
+            if(hiddenValueElements.length) {
+                hiddenValues = {};
+                for(i = 0; i < hiddenValueElements.length; i++) {
+                    hiddenValues[hiddenValueElements[i].name] = hiddenValueElements[i].value;
+                }
+            }
 
             if (this._config['type'] === undefined) {
                 return;
@@ -547,6 +559,7 @@ var Selection = function ($) {
                                 .attr('name',  'min_' + this._element.getAttribute('data-name'))
                                 .val($(this._parent).find(Selector.INPUT_MIN).val().replace(/[,]*/g, ''))
                         );
+
                     }
 
                     if (inputMax.val()) {
@@ -555,9 +568,21 @@ var Selection = function ($) {
                                 .attr('name', 'max_' + this._element.getAttribute('data-name'))
                                 .val($(this._parent).find(Selector.INPUT_MAX).val().replace(/[,]*/g, ''))
                         );
+
+                    }
+
+                    var minHiddenValue = hiddenValues ? hiddenValues['min_' + this._element.getAttribute('data-name')] : undefined ;
+                    if(minHiddenValue === undefined || inputMin.val().replace(/[,]*/g, '') !== minHiddenValue) {
+                        isChanged = isChanged || true;
+                    }
+
+                    var maxHiddenValue = hiddenValues ? hiddenValues['max_' + this._element.getAttribute('data-name')] : undefined ;
+                    if(maxHiddenValue === undefined || inputMax.val().replace(/[,]*/g, '') !== maxHiddenValue) {
+                        isChanged = isChanged || true;
                     }
                     break;
                 case "multiple":
+                     equalsCount = 0;
                     checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
                     if (checkedItems.length) {
                         for (i in checkedItems) {
@@ -566,10 +591,23 @@ var Selection = function ($) {
                                     .attr('name', this._element.getAttribute('data-name') + '[]')
                                     .val(checkedItems[i].getAttribute('data-value'))
                             );
+                            for(index in hiddenValueElements) {
+                                if (hiddenValueElements[index].value === checkedItems[i].getAttribute('data-value')) {
+                                    hiddenValueElements.splice(index, 1);
+                                    equalsCount++;
+                                }
+                            }
                         }
+                        if(hiddenValueElements.length >= equalsCount || checkedItems.length > equalsCount) {
+                            isChanged = true;
+                        }
+                    }
+                    else if(hiddenValueElements.length) {
+                        isChanged = true;
                     }
                     break;
                 case "single":
+                    equalsCount = 0;
                     checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
                     if (checkedItems.length) {
                         for (i in checkedItems) {
@@ -578,9 +616,25 @@ var Selection = function ($) {
                                     .attr('name', this._element.getAttribute('data-name'))
                                     .val(checkedItems[i].getAttribute('data-value'))
                             );
+                            for(index in hiddenValueElements) {
+                                if (hiddenValueElements[index].value === checkedItems[i].getAttribute('data-value')) {
+                                    hiddenValueElements.splice(index, 1);
+                                    equalsCount++;
+                                }
+                            }
+                        }
+                        if(hiddenValueElements.length >= equalsCount || checkedItems.length > equalsCount) {
+                            isChanged = true;
                         }
                     }
+                    else if(hiddenValueElements.length) {
+                        isChanged = true;
+                    }
                     break;
+            }
+
+            if(isChanged) {
+                $(this._parent).trigger(changeEvent);
             }
         };
 
@@ -653,7 +707,7 @@ var Selection = function ($) {
                         return;
                     }
                     else {
-                        term = Number(pattern).toLocaleString('en')();
+                        term = Number(pattern).toLocaleString('en');
                     }
                     _this.value = term;
                     break;
