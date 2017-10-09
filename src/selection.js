@@ -253,11 +253,6 @@ var Selection = function ($) {
         };
 
         Selection.prototype.clean = function clean() {
-            // var relatedTarget = {
-            //     relatedTarget: undefined
-            // };
-            // var changeEvent = $.Event(Event.CHANGE, relatedTarget);
-
             this._unchekedItems();
             var inputs = $(this._parent).find(Selector.INPUT);
             for (var i = 0; i < inputs.length; i++) {
@@ -267,7 +262,6 @@ var Selection = function ($) {
             this._refreshValueInputs();
             this._setLabel();
             this._toggleCleanButton();
-            //$(this._parent).trigger(changeEvent);
         };
 
         Selection.prototype.refresh = function refresh() {
@@ -571,13 +565,13 @@ var Selection = function ($) {
 
                     }
 
-                    var minHiddenValue = hiddenValues ? hiddenValues['min_' + this._element.getAttribute('data-name')] : undefined ;
-                    if(minHiddenValue === undefined || inputMin.val().replace(/[,]*/g, '') !== minHiddenValue) {
+                    var minHiddenValue = hiddenValues ? hiddenValues['min_' + this._element.getAttribute('data-name')] : '' ;
+                    if(inputMin.val().replace(/[,]*/g, '') !== minHiddenValue) {
                         isChanged = isChanged || true;
                     }
 
-                    var maxHiddenValue = hiddenValues ? hiddenValues['max_' + this._element.getAttribute('data-name')] : undefined ;
-                    if(maxHiddenValue === undefined || inputMax.val().replace(/[,]*/g, '') !== maxHiddenValue) {
+                    var maxHiddenValue = hiddenValues ? hiddenValues['max_' + this._element.getAttribute('data-name')] : '' ;
+                    if(inputMax.val().replace(/[,]*/g, '') !== maxHiddenValue) {
                         isChanged = isChanged || true;
                     }
                     break;
