@@ -272,7 +272,7 @@ var Selection = function ($) {
 
         Selection.prototype.refresh = function refresh() {
             this._setCaption();
-            this._refreshValueInputs();
+            this._refreshValueInputs(true);
             this._toggleCleanButton();
         };
 
@@ -525,7 +525,7 @@ var Selection = function ($) {
             }
         };
 
-        Selection.prototype._refreshValueInputs = function _refreshValueInputs() {
+        Selection.prototype._refreshValueInputs = function _refreshValueInputs(initial) {
             var checkedItems;
             var i, index;
             var hiddenValues;
@@ -633,7 +633,7 @@ var Selection = function ($) {
                     break;
             }
 
-            if(isChanged) {
+            if(isChanged && initial === undefined) {
                 $(this._parent).trigger(changeEvent);
             }
         };
