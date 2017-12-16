@@ -20,6 +20,7 @@ var Selection = function ($) {
     var ITEM_KEY = '.item';
     var BUTTON_CLEAN_KEY = '.btn.clean';
     var RESET_KEY = '.btn.reset';
+    var NEW_KEY = '.btn.new';
     var DATA_API_KEY = '.data-api';
     var JQUERY_NO_CONFLICT = $.fn[NAME];
     var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
@@ -41,6 +42,7 @@ var Selection = function ($) {
         CLICK_ITEM: 'click' + EVENT_KEY + ITEM_KEY,
         CLICK_BTN_CLEAN: 'click' + EVENT_KEY + BUTTON_CLEAN_KEY,
         CLICK_RESET: 'click' + EVENT_KEY + RESET_KEY,
+        CLICK_NEW: 'click' + EVENT_KEY + NEW_KEY,
         CLICK_DATA_API: 'click' + EVENT_KEY + DATA_API_KEY,
         KEYDOWN_DATA_API: 'keydown' + EVENT_KEY + DATA_API_KEY,
         KEYUP_DATA_API: 'keyup' + EVENT_KEY + DATA_API_KEY
@@ -157,7 +159,6 @@ var Selection = function ($) {
             //     relatedTarget: item
             // };
             // var changeEvent = $.Event(Event.CHANGE, relatedTarget);
-
             if (this._config['type'] !== undefined) {
                 switch (this._config['type']) {
                     case 'single':
@@ -168,6 +169,10 @@ var Selection = function ($) {
                         break;
                     case 'multiple':
                         var checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS + '[data-similar=' + item.getAttribute('data-similar') + ']'));
+                        console.log(checkedItems.length);
+                        if(!$(item).hasClass(ClassName.CHECKED) && this._config['selectedLimit'] && checkedItems.length >= this._config['selectedLimit']) {
+                            return;
+                        }
                         if (checkedItems.length === 0) {
                             this._unchekedItems();
                         }
@@ -250,6 +255,10 @@ var Selection = function ($) {
             this._clearSearch();
             this.toggle();
             //$(this._parent).trigger(changeEvent);
+        };
+
+        Selection.prototype.new = function reset() {
+            this._newItem();
         };
 
         Selection.prototype.clean = function clean() {
@@ -359,6 +368,13 @@ var Selection = function ($) {
                 event.stopPropagation();
                 _this.reset();
             });
+
+            $(this._parent).on(Event.CLICK_NEW, Selector.NEW_BUTTON, function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                _this.new();
+            });
+
         };
 
         Selection.prototype._getConfig = function _getConfig(config) {
@@ -605,11 +621,20 @@ var Selection = function ($) {
                     checkedItems = $.makeArray($(this._list).find(Selector.CHECKED_ITEMS));
                     if (checkedItems.length) {
                         for (i in checkedItems) {
-                            $(this._parent).append(
-                                $('<input type="hidden" class="value">')
-                                    .attr('name', this._element.getAttribute('data-name'))
-                                    .val(checkedItems[i].getAttribute('data-value'))
-                            );
+                            if($(checkedItems[i]).hasClass('item-new')) {
+                                $(this._parent).append(
+                                    $('<input type="hidden" class="value">')
+                                        .attr('name', 'new_' + this._element.getAttribute('data-name'))
+                                        .val(checkedItems[i].getAttribute('data-value'))
+                                );
+                            } else {
+                                $(this._parent).append(
+                                    $('<input type="hidden" class="value">')
+                                        .attr('name', this._element.getAttribute('data-name'))
+                                        .val(checkedItems[i].getAttribute('data-value'))
+                                );
+                            }
+
                             for(index in hiddenValueElements) {
                                 if (hiddenValueElements[index].value === checkedItems[i].getAttribute('data-value')) {
                                     hiddenValueElements.splice(index, 1);
@@ -826,6 +851,28 @@ var Selection = function ($) {
                     break;
             }
 
+        };
+
+        Selection.prototype._newItem = function _newItem() {
+            if (this._config['type'] === undefined) {
+                return;
+            }
+
+            switch (this._config['type']) {
+                case "multiple":
+                case "single":
+                    var value = $(this._parent).find(Selector.INPUT).val();
+
+                    $(this._parent).find(Selector.INPUT).val('');
+                    $(this._list).find(Selector.HIDDEN_ITEMS).removeClass(ClassName.HIDE);
+
+                    var item = $('<li class="selection-item item-new" data-value="' + value + '" data-text="' + value + '">' + value + '</li>');
+
+                    $(this._list).append(item);
+                    this.toggleItem(item);
+
+                    break;
+            }
         };
 
         // static
