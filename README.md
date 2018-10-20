@@ -1,2 +1,2 @@
-# selecshen
-A customizable  javascript selection plugin
+# selection
+A customizable javascript selection plugin
