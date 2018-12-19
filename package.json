@@ -1,6 +1,6 @@
 {
   "name": "selectionjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SelectionJs is the jquery plugin that provides select and range components.",
   "main": "selection.js",
   "directories": {
