@@ -1,1 +1,178 @@
-﻿.selection{position:relative;cursor:pointer;background:#F2F3F4;border-radius:4px;margin-left:16px}.selection.show{background:#DDD}.selection.show [data-toggle]::after{font-family:"Material Design Icons";content:'\f143';border:0;width:0;height:0;font-size:18px;vertical-align:sub;margin-right:0.255em}.selection [data-toggle]{height:36px;line-height:2;padding:0 15px}.selection [data-toggle]::after{font-family:"Material Design Icons";content:'\f140';border:0;width:0;height:0;font-size:18px;vertical-align:sub;margin-right:0.255em}.selection [data-toggle] .selection-btn.clean{display:none;border:0;outline:0;color:red;margin:0;padding:0 4px;text-align:center;vertical-align:sub;background:transparent}.selection [data-toggle] .selection-btn.clean.show{display:inline-block !important}.selection [data-toggle] .selection-caption .selection-label{padding-left:3px}.selection [data-toggle] .selection-caption .selection-tag::after{content:"، "}.selection [data-toggle] .selection-caption .selection-tag:last-child::after{content:''}.selection [data-toggle] .selection-caption .selection-tag.number{display:inline-block;min-width:20px;height:20px;padding:0 2px;color:#ffffff;line-height:1.9;text-align:center;border-radius:10px;background-color:#999}.selection [data-toggle][data-type=range] .selection-caption .selection-tag::after{content:"";padding:0 2px}.selection-dropdown{position:absolute;top:110%;right:0;z-index:1000;display:none;float:left;min-width:220px;margin:0.125rem 0 0;color:#212529;text-align:left;list-style:none;background-color:#fff;background-clip:padding-box;border-radius:4px;border:1px solid rgba(0,0,0,0.2);box-shadow:0 14px 36px 2px rgba(0,0,0,0.15)}.selection-dropdown.show{display:block !important}.selection-dropdown .selection-input-group{width:100%;display:flex}.selection-dropdown .selection-input-group .selection-input{width:100%;border:0;margin:5px;outline:none;padding:7px 10px;border-radius:4px;background-color:#F2F3F4}.selection-dropdown .selection-input-group .selection-input-min,.selection-dropdown .selection-input-group .selection-input-max{display:inline-flex;margin:0 2px;width:50%;outline:none}.selection-dropdown .selection-input-group .dash{padding-top:7px}.selection-dropdown .selection-action-group{display:table;width:100%;cursor:default;padding:5px}.selection-dropdown .selection-list{min-width:100%;color:#212529;text-align:right;list-style:none;padding:0;margin:0;max-height:280px;overflow:auto}.selection-dropdown .selection-list .selection-item{display:block;width:100%;padding:0.5rem 1.5rem;clear:both;font-weight:normal;color:#212529;text-align:inherit;white-space:nowrap;background:none;border:0}.selection-dropdown .selection-list .selection-item:focus,.selection-dropdown .selection-list .selection-item:hover{color:#16181b;text-decoration:none;background-color:#f8f9fa}.selection-dropdown .selection-list .selection-item.disabled,.selection-dropdown .selection-list .selection-item:disabled{color:#868e96;background:transparent}.selection-dropdown .selection-list .selection-item .checkbox{width:15px;height:15px;border:1px solid #868e96;margin:0 0.25em 0 0;padding:0}.selection-dropdown .selection-list.multiple .selection-item:before{font-family:'Material Design Icons';content:'\f131';color:#D5D5D5;padding-left:10px;line-height:1;vertical-align:sub}.selection-dropdown .selection-list.multiple .selection-item.checked:before{font-family:'Material Design Icons';padding-left:10px;content:'\f132';color:#1ec56b;font-size:1.5em}.selection-dropdown .selection-list.multiple .selection-item.checked .checkbox{background-color:#1b6d85;border-color:#1b6d85}.selection-dropdown .selection-list.range .selection-item.checked{background:#F2F3F4}.selection-dropdown .selection-list.min{text-align:right}.selection-dropdown .selection-list.max{text-align:left}.selection-dropdown .selection-action-group .selection-action.accept{color:#1ec56b;font-weight:500;background:none}.selection-dropdown .selection-action-group .selection-action.reset{color:#BBB;background:none}.selection-dropdown .selection-action-group .selection-action.new{display:none;background:red}.selection-dropdown .selection-action-group .selection-action.new.show{display:block}
+@charset "UTF-8";
+.selection {
+  position: relative;
+  cursor: pointer;
+  background: #F2F3F4;
+  border-radius: 4px;
+  margin-left: 16px; }
+  .selection.show {
+    background: #DDD; }
+    .selection.show [data-toggle]::after {
+      font-family: "Material Design Icons";
+      content: '\f143';
+      border: 0;
+      width: 0;
+      height: 0;
+      font-size: 18px;
+      vertical-align: sub;
+      margin-right: 0.255em; }
+  .selection [data-toggle] {
+    height: 36px;
+    line-height: 2;
+    padding: 0 15px; }
+    .selection [data-toggle]::after {
+      font-family: "Material Design Icons";
+      content: '\f140';
+      border: 0;
+      width: 0;
+      height: 0;
+      font-size: 18px;
+      vertical-align: sub;
+      margin-right: 0.255em; }
+    .selection [data-toggle] .selection-btn.clean {
+      display: none;
+      border: 0;
+      outline: 0;
+      color: red;
+      margin: 0;
+      padding: 0 4px;
+      text-align: center;
+      vertical-align: sub;
+      background: transparent; }
+      .selection [data-toggle] .selection-btn.clean.show {
+        display: inline-block !important; }
+    .selection [data-toggle] .selection-caption .selection-label {
+      padding-left: 3px; }
+    .selection [data-toggle] .selection-caption .selection-tag::after {
+      content: "، "; }
+    .selection [data-toggle] .selection-caption .selection-tag:last-child::after {
+      content: ''; }
+    .selection [data-toggle] .selection-caption .selection-tag.number {
+      display: inline-block;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 2px;
+      color: #ffffff;
+      line-height: 1.9;
+      text-align: center;
+      border-radius: 10px;
+      background-color: #999; }
+    .selection [data-toggle][data-type=range] .selection-caption .selection-tag::after {
+      content: "";
+      padding: 0 2px; }
+
+.selection-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  z-index: 1000;
+  display: none;
+  float: left;
+  min-width: 220px;
+  margin: 0.125rem 0 0;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 14px 36px 2px rgba(0, 0, 0, 0.15); }
+  .selection-dropdown.show {
+    display: block !important; }
+  .selection-dropdown .selection-input-group {
+    width: 100%;
+    display: flex; }
+    .selection-dropdown .selection-input-group .selection-input {
+      width: 100%;
+      border: 0;
+      margin: 5px;
+      outline: none;
+      padding: 7px 10px;
+      border-radius: 4px;
+      background-color: #F2F3F4; }
+    .selection-dropdown .selection-input-group .selection-input-min,
+    .selection-dropdown .selection-input-group .selection-input-max {
+      display: inline-flex;
+      margin: 0 2px;
+      width: 50%;
+      outline: none; }
+    .selection-dropdown .selection-input-group .dash {
+      padding-top: 7px; }
+  .selection-dropdown .selection-action-group {
+    display: table;
+    width: 100%;
+    cursor: default;
+    padding: 5px; }
+  .selection-dropdown .selection-list {
+    min-width: 100%;
+    color: #212529;
+    text-align: right;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 280px;
+    overflow: auto; }
+    .selection-dropdown .selection-list .selection-item {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1.5rem;
+      clear: both;
+      font-weight: normal;
+      color: #212529;
+      text-align: inherit;
+      white-space: nowrap;
+      background: none;
+      border: 0;
+      /*&.active, &:active {
+                color: #fff;
+                text-decoration: none;
+                background-color: #007bff;
+            }*/ }
+      .selection-dropdown .selection-list .selection-item:focus, .selection-dropdown .selection-list .selection-item:hover {
+        color: #16181b;
+        text-decoration: none;
+        background-color: #f8f9fa; }
+      .selection-dropdown .selection-list .selection-item.disabled, .selection-dropdown .selection-list .selection-item:disabled {
+        color: #868e96;
+        background: transparent; }
+      .selection-dropdown .selection-list .selection-item .checkbox {
+        width: 15px;
+        height: 15px;
+        border: 1px solid #868e96;
+        margin: 0 0.25em 0 0;
+        padding: 0; }
+    .selection-dropdown .selection-list.multiple .selection-item:before {
+      font-family: 'Material Design Icons';
+      content: '\f131';
+      color: #D5D5D5;
+      padding-left: 10px;
+      line-height: 1;
+      vertical-align: sub; }
+    .selection-dropdown .selection-list.multiple .selection-item.checked:before {
+      font-family: 'Material Design Icons';
+      padding-left: 10px;
+      content: '\f132';
+      color: #1ec56b;
+      font-size: 1.5em; }
+    .selection-dropdown .selection-list.multiple .selection-item.checked .checkbox {
+      background-color: #1b6d85;
+      border-color: #1b6d85; }
+    .selection-dropdown .selection-list.range .selection-item.checked {
+      background: #F2F3F4; }
+    .selection-dropdown .selection-list.min {
+      text-align: right; }
+    .selection-dropdown .selection-list.max {
+      text-align: left; }
+  .selection-dropdown .selection-action-group .selection-action.accept {
+    color: #1ec56b;
+    font-weight: 500;
+    background: none; }
+  .selection-dropdown .selection-action-group .selection-action.reset {
+    color: #BBB;
+    background: none; }
+  .selection-dropdown .selection-action-group .selection-action.new {
+    display: none;
+    background: red; }
+    .selection-dropdown .selection-action-group .selection-action.new.show {
+      display: block; }

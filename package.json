@@ -1,20 +1,27 @@
 {
-  "name": "selectionjs",
-  "version": "1.0.1",
+  "name": "selection",
+  "version": "1.0.2",
   "description": "SelectionJs is the jquery plugin that provides select and range components.",
-  "main": "selection.js",
+  "main": "src/selection.js",
   "directories": {
     "example": "example",
     "dist": "dist",
-    "docs": "docs",
     "src": "src"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp minify",
+    "dev": "gulp build",
+    "watch": "gulp watch"
   },
+  "author": "Majid Ataee (manishen.com)",
+  "bugs": {
+    "url": "https://github.com/manishen/selection/issues"
+  },
+  "homepage": "https://github.com/manishen/selection",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ataiemajid_63/selectionjs.git"
+    "url": "https://github.com/manishen/selection.git"
   },
   "keywords": [
     "select",
@@ -23,16 +30,17 @@
     "single select",
     "multi select"
   ],
-  "author": "Majid Ataee",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ataiemajid_63/griew/issues"
-  },
-  "homepage": "",
   "devDependencies": {
+    "bootstrap": "^4.1.3",
     "gulp": "^3.9.1",
-    "gulp-sass": "^3.1.0",
-    "gulp-sourcemaps": "2.4.1",
-    "gulp-uglify": "^2.1.2"
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^3.1.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.4",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.6"
   }
 }

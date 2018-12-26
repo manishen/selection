@@ -1067,4 +1067,3 @@ var Selection = function ($) {
     return Selection;
 }(jQuery);
 
-export default Selection;
