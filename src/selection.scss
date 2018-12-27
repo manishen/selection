@@ -179,6 +179,10 @@
                 text-decoration: none;
                 background-color: #f8f9fa;
             }
+            
+            &.hide {
+                display: none;
+            }
 
             /*&.active, &:active {
                 color: #fff;
