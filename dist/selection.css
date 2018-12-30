@@ -133,6 +133,8 @@
         color: #16181b;
         text-decoration: none;
         background-color: #f8f9fa; }
+      .selection-dropdown .selection-list .selection-item.hide {
+        display: none; }
       .selection-dropdown .selection-list .selection-item.disabled, .selection-dropdown .selection-list .selection-item:disabled {
         color: #868e96;
         background: transparent; }
