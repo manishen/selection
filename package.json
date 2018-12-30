@@ -1,6 +1,6 @@
 {
   "name": "manishen-selection.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "SelectionJs is the jquery plugin that provides select and range components.",
   "main": "src/selection.js",
   "directories": {
